@@ -1,13 +1,19 @@
+mod branch;
+
 pub(crate) mod production {
     use crate::calyx_rs::calyx_rs::Grammar;
 
     pub trait Production {
-        fn evaluate(self: &Self, grammar: &Grammar) -> Option<Expansion>;
+        fn evaluate(&self, grammar: &Grammar) -> Option<Expansion>;
     }
 
     pub trait ProductionBranch: Production {
-        fn evaluate_at(self: &Self, index: isize, grammar: &Grammar) -> Option<Expansion>;
+        fn evaluate_at(&self, index: isize, grammar: &Grammar) -> Option<Expansion>;
 
+        fn length(&self) -> isize;
+    }
+
+    impl<B: ProductionBranch> Production for B {
         fn evaluate(self: &Self, grammar: &Grammar) -> Option<Expansion> {
             self.evaluate_at(0, grammar)
         }
@@ -43,10 +49,10 @@ pub(crate) mod production {
             }
         }
 
-        pub fn new_atom(term: String) -> Self {
+        pub fn new_atom(term: &str) -> Self {
             Expansion {
                 tail: vec![],
-                symbol: ExpansionType::Atom(term),
+                symbol: ExpansionType::Atom(term.to_string()),
             }
         }
 
