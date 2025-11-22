@@ -1,15 +1,16 @@
 mod production;
+mod registry;
 
 pub mod calyx_rs {
-    use std::collections::HashMap;
+    use crate::calyx_rs::registry::registry;
 
-    pub struct Options {
+    pub struct Options<R: rand::Rng> {
         strict: bool,
-        random: rand::Rng
+        random_source: R,
     }
 
     pub struct Grammar {
-        rules: HashMap<String, String>,
+        registry: registry::Registry,
     }
 
     pub enum Err {
@@ -17,17 +18,29 @@ pub mod calyx_rs {
         UndefinedFilter { filter_name: String },
     }
 
-    struct Registry {
-
-    }
-
-    struct Rule {
-        term: String
-    }
-
     impl Grammar {
         pub fn start(&self, start_name: &str) -> Result<(), Err> {
-            return Result::Ok(());
+            Ok(())
+        }
+    }
+
+    impl<R: rand::Rng> Options<R> {
+        fn new(strict: bool, random_source: R) -> Options<R> {
+            Options {
+                strict,
+                random_source,
+            }
+        }
+
+        fn new_lenient(random_source: R) -> Options<R> {
+            Options {
+                strict: false,
+                random_source,
+            }
+        }
+
+        fn strict(&self) -> bool {
+            self.strict
         }
     }
 }
