@@ -1,11 +1,11 @@
 pub(crate) mod production {
     use crate::calyx_rs::calyx_rs::Grammar;
 
-    pub(crate) trait Production {
+    pub trait Production {
         fn evaluate(self: &Self, grammar: &Grammar) -> Option<Expansion>;
     }
 
-    pub(crate) trait ProductionBranch: Production {
+    pub trait ProductionBranch: Production {
         fn evaluate_at(self: &Self, index: isize, grammar: &Grammar) -> Option<Expansion>;
 
         fn evaluate(self: &Self, grammar: &Grammar) -> Option<Expansion> {
@@ -13,7 +13,7 @@ pub(crate) mod production {
         }
     }
 
-    enum ExpansionType {
+    pub enum ExpansionType {
         Atom(String),
         Result,
         UniformBranch,
@@ -26,26 +26,44 @@ pub(crate) mod production {
         Uniq,
     }
 
-    pub(crate) struct Expansion {
+    pub struct Expansion {
         tail: Vec<Expansion>,
         symbol: ExpansionType,
     }
 
     impl Expansion {
+        pub fn new(symbol: ExpansionType, tail: Vec<Expansion>) -> Self {
+            Expansion { tail, symbol }
+        }
+
+        pub fn chain(symbol: ExpansionType, tail: Expansion) -> Self {
+            Expansion {
+                tail: vec![tail],
+                symbol,
+            }
+        }
+
+        pub fn new_atom(term: String) -> Self {
+            Expansion {
+                tail: vec![],
+                symbol: ExpansionType::Atom(term),
+            }
+        }
+
         pub fn flatten(&self) -> String {
             let mut term = String::from("");
-            self.collectAtoms(&mut term);
+            self.collect_atoms(&mut term);
             term
         }
 
-        fn collectAtoms(&self, concat: &mut String) {
+        fn collect_atoms(&self, concat: &mut String) {
             match &self.symbol {
                 ExpansionType::Atom(term) => {
                     concat.push_str(term.as_str());
                 }
                 _ => {
                     for exp in &self.tail {
-                        exp.collectAtoms(concat);
+                        exp.collect_atoms(concat);
                     }
                 }
             }
