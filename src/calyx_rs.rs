@@ -1,9 +1,9 @@
 mod production;
 mod registry;
 
-pub struct Options<R: rand::Rng> {
+pub struct Options {
     strict: bool,
-    random_source: R,
+    random_source: Box<dyn rand::RngCore>,
 }
 
 pub struct Grammar {
@@ -21,18 +21,18 @@ impl Grammar {
     }
 }
 
-impl<R: rand::Rng> Options<R> {
-    fn new(strict: bool, random_source: R) -> Options<R> {
+impl Options {
+    fn new<R: rand::RngCore + 'static>(strict: bool, random_source: R) -> Options {
         Options {
             strict,
-            random_source,
+            random_source: Box::new(random_source),
         }
     }
 
-    fn new_lenient(random_source: R) -> Options<R> {
+    fn new_lenient<R: rand::RngCore + 'static>(random_source: R) -> Options {
         Options {
             strict: false,
-            random_source,
+            random_source: Box::new(random_source),
         }
     }
 
