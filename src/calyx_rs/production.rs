@@ -1,20 +1,28 @@
 mod branch;
 
-use crate::calyx_rs::Grammar;
+use crate::calyx_rs::registry::EvaluationContext;
+use crate::calyx_rs::CalyxError;
 
 pub trait Production {
-    fn evaluate(&self, grammar: &Grammar) -> Option<Expansion>;
+    fn evaluate(&self, eval_context: &mut EvaluationContext) -> Result<Expansion, CalyxError>;
 }
 
 pub trait ProductionBranch: Production {
-    fn evaluate_at(&self, index: isize, grammar: &Grammar) -> Option<Expansion>;
+    fn evaluate_at(
+        &self,
+        index: isize,
+        eval_context: &mut EvaluationContext,
+    ) -> Result<Expansion, CalyxError>;
 
-    fn length(&self) -> isize;
+    fn len(&self) -> usize;
 }
 
 impl<B: ProductionBranch> Production for B {
-    fn evaluate(self: &Self, grammar: &Grammar) -> Option<Expansion> {
-        self.evaluate_at(0, grammar)
+    fn evaluate(
+        self: &Self,
+        eval_context: &mut EvaluationContext,
+    ) -> Result<Expansion, CalyxError> {
+        self.evaluate_at(0, eval_context)
     }
 }
 

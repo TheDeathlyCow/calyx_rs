@@ -10,13 +10,14 @@ pub struct Grammar {
     registry: registry::Registry,
 }
 
-pub enum Err {
+pub enum CalyxError {
     UndefinedRule { rule_name: String },
     UndefinedFilter { filter_name: String },
+    ExpandedEmptyBranch,
 }
 
 impl Grammar {
-    pub fn start(&self, start_name: &str) -> Result<(), Err> {
+    pub fn start(&self, start_name: &str) -> Result<(), CalyxError> {
         Ok(())
     }
 }
