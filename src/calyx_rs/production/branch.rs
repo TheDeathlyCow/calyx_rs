@@ -37,8 +37,8 @@ impl ProductionBranch for UniformBranch {
             .choose(&mut options.random_source)
             .ok_or(CalyxError::ExpandedEmptyBranch)?;
 
-        let t = item.evaluate(eval_context)?;
-        Ok(Expansion::chain(ExpansionType::UniformBranch, t))
+        let tail = item.evaluate(eval_context)?;
+        Ok(Expansion::chain(ExpansionType::UniformBranch, tail))
     }
 
     fn len(&self) -> usize {
