@@ -1,7 +1,8 @@
 use crate::calyx_rs::CalyxError;
-use crate::calyx_rs::production::{Expansion, ExpansionType, Production, ProductionBranch};
-use crate::calyx_rs::registry::EvaluationContext;
+use crate::calyx_rs::production::{Production, ProductionBranch};
+use crate::calyx_rs::evaluation::EvaluationContext;
 use rand::seq::IndexedRandom;
+use crate::calyx_rs::expansion_tree::{ExpansionTree, ExpansionType};
 
 struct EmptyBranch {}
 
@@ -10,9 +11,9 @@ impl ProductionBranch for EmptyBranch {
         self: &Self,
         index: isize,
         eval_context: &mut EvaluationContext,
-    ) -> Result<Expansion, CalyxError> {
-        let exp = Expansion::new_atom("");
-        Ok(Expansion::chain(ExpansionType::EmptyBranch, exp))
+    ) -> Result<ExpansionTree, CalyxError> {
+        let exp = ExpansionTree::new_atom("");
+        Ok(ExpansionTree::chain(ExpansionType::EmptyBranch, exp))
     }
 
     fn len(&self) -> usize {
@@ -29,7 +30,7 @@ impl ProductionBranch for UniformBranch {
         &self,
         index: isize,
         eval_context: &mut EvaluationContext,
-    ) -> Result<Expansion, CalyxError> {
+    ) -> Result<ExpansionTree, CalyxError> {
         let options = eval_context.options();
 
         let item = self
@@ -38,7 +39,7 @@ impl ProductionBranch for UniformBranch {
             .ok_or(CalyxError::ExpandedEmptyBranch)?;
 
         let tail = item.evaluate(eval_context)?;
-        Ok(Expansion::chain(ExpansionType::UniformBranch, tail))
+        Ok(ExpansionTree::chain(ExpansionType::UniformBranch, tail))
     }
 
     fn len(&self) -> usize {

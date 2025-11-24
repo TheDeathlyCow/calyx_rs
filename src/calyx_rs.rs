@@ -1,5 +1,6 @@
 mod production;
-mod registry;
+mod evaluation;
+mod expansion_tree;
 
 pub struct Options {
     strict: bool,
@@ -7,7 +8,7 @@ pub struct Options {
 }
 
 pub struct Grammar {
-    registry: registry::Registry,
+    registry: evaluation::Registry,
 }
 
 pub enum CalyxError {
