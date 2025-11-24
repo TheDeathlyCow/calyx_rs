@@ -19,21 +19,19 @@ impl Registry {
     }
 
     pub fn expand(&self, symbol: &String, options: &Options) -> Result<&Rule, CalyxError> {
-        if self.rules.contains_key(symbol) {
-            return self
-                .rules
-                .get(symbol)
-                .ok_or_else(|| CalyxError::UndefinedRule {
-                    rule_name: symbol.clone(),
-                });
-        }
+        let stored_rule = self.rules.get(symbol);
 
-        if options.strict {
-            Err(CalyxError::UndefinedRule {
-                rule_name: symbol.clone(),
-            })
-        } else {
-            Ok(&self.empty_rule)
+        match stored_rule {
+            Some(rule) => Ok(rule),
+            None => {
+                if options.strict {
+                    Err(CalyxError::UndefinedRule {
+                        rule_name: symbol.clone(),
+                    })
+                } else {
+                    Ok(&self.empty_rule)
+                }
+            }
         }
     }
 }
