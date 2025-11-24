@@ -1,10 +1,10 @@
-use crate::calyx_rs::CalyxError;
+use crate::calyx_rs::{evaluation, CalyxError};
 use crate::calyx_rs::production::{Production, ProductionBranch};
 use crate::calyx_rs::evaluation::EvaluationContext;
 use rand::seq::IndexedRandom;
 use crate::calyx_rs::expansion_tree::{ExpansionTree, ExpansionType};
 
-struct EmptyBranch {}
+pub(crate) struct EmptyBranch {}
 
 impl ProductionBranch for EmptyBranch {
     fn evaluate_at(

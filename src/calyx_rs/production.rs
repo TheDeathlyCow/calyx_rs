@@ -1,4 +1,4 @@
-mod branch;
+pub(super) mod branch;
 mod node;
 
 use crate::calyx_rs::CalyxError;
