@@ -14,6 +14,23 @@ impl Production for AtomNode {
     }
 }
 
+struct ExpressionNode {
+    reference: String,
+}
+
+impl ExpressionNode {
+    fn parse(name: String) -> Result<ExpressionNode, CalyxError> {
+        todo!()
+    }
+}
+
+impl Production for ExpressionNode {
+    fn evaluate(&self, eval_context: &mut EvaluationContext) -> Result<ExpansionTree, CalyxError> {
+        let result = eval_context.expand_and_evaluate(&self.reference)?;
+        Ok(ExpansionTree::chain(ExpansionType::Expression, result))
+    }
+}
+
 struct TemplateNode {
     concat_nodes: Vec<Box<dyn Production>>,
 }
