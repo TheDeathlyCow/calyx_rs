@@ -74,7 +74,7 @@ impl TemplateNode {
         Ok(TemplateNode { concat_nodes })
     }
 
-    fn parse_expr   ession(raw_expression: String) -> Result<Box<dyn Production>, CalyxError> {
+    fn parse_expression(raw_expression: String) -> Result<Box<dyn Production>, CalyxError> {
         let components = raw_expression
             .split(".")
             .map(|s| s.to_string())
