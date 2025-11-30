@@ -18,12 +18,6 @@ struct ExpressionNode {
     reference: String,
 }
 
-impl ExpressionNode {
-    fn parse(name: String) -> Result<ExpressionNode, CalyxError> {
-        todo!()
-    }
-}
-
 impl Production for ExpressionNode {
     fn evaluate(&self, eval_context: &mut EvaluationContext) -> Result<ExpansionTree, CalyxError> {
         let result = eval_context.expand_and_evaluate(&self.reference)?;
@@ -70,7 +64,7 @@ impl TemplateNode {
                     })?
                     .to_string();
 
-                let expression = Self::parse_expression(&raw_expression)?;
+                let expression = Self::parse_expression(raw_expression)?;
                 concat_nodes.push(expression)
             } else {
                 concat_nodes.push(Box::new(AtomNode { atom: fragment }))
@@ -80,8 +74,45 @@ impl TemplateNode {
         Ok(TemplateNode { concat_nodes })
     }
 
-    fn parse_expression(raw_expression: &String) -> Result<Box<dyn Production>, CalyxError> {
-        todo!()
+    fn parse_expr   ession(raw_expression: String) -> Result<Box<dyn Production>, CalyxError> {
+        let components = raw_expression
+            .split(".")
+            .map(|s| s.to_string())
+            .collect::<Vec<String>>();
+
+        if components.is_empty() {
+            Self::parse_simple_expression(raw_expression)
+        } else {
+            Self::parse_expression_chain(raw_expression, &components)
+        }
+    }
+
+    fn parse_simple_expression(raw_expression: String) -> Result<Box<dyn Production>, CalyxError> {
+        let sigil = raw_expression
+            .chars()
+            .nth(0)
+            .ok_or_else(|| CalyxError::InvalidExpression {
+                expression: raw_expression.clone(),
+            })?;
+
+        match sigil {
+            '@' => {
+                todo!("memo not yet implemented")
+            }
+            '$' => {
+                todo!("unique not yet implemented")
+            }
+            _ => Ok(Box::new(ExpressionNode {
+                reference: raw_expression,
+            })),
+        }
+    }
+
+    fn parse_expression_chain(
+        raw_expression: String,
+        raw_chain: &Vec<String>,
+    ) -> Result<Box<dyn Production>, CalyxError> {
+        todo!("expr chain not yet implemented")
     }
 
     fn fragment_string(raw: &str) -> Vec<String> {
