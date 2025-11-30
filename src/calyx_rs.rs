@@ -16,6 +16,7 @@ pub enum CalyxError {
     UndefinedRule { rule_name: String },
     UndefinedFilter { filter_name: String },
     ExpandedEmptyBranch,
+    InvalidExpression { expression: String },
 }
 
 impl Grammar {
