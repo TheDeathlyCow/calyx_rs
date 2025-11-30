@@ -19,6 +19,14 @@ pub struct ExpansionTree {
 }
 
 impl ExpansionTree {
+    pub fn children(&self) -> &Vec<ExpansionTree> {
+        &self.children
+    }
+
+    pub fn symbol(&self) -> &ExpansionType {
+        &self.symbol
+    }
+
     pub fn new(symbol: ExpansionType, tail: Vec<ExpansionTree>) -> Self {
         ExpansionTree { children: tail, symbol }
     }
