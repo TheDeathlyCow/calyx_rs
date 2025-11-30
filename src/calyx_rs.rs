@@ -1,3 +1,6 @@
+use crate::calyx_rs::evaluation::{EvaluationContext, Registry};
+use crate::calyx_rs::expansion_tree::ExpansionTree;
+
 mod evaluation;
 mod expansion_tree;
 mod production;
@@ -8,7 +11,8 @@ pub struct Options {
 }
 
 pub struct Grammar {
-    registry: evaluation::Registry,
+    registry: Registry,
+    options: Options,
 }
 
 #[derive(Debug)]
@@ -21,6 +25,11 @@ pub enum CalyxError {
 }
 
 impl Grammar {
+    pub fn new(options: Options) -> Grammar {
+        let registry = Registry::new();
+        Grammar { registry, options }
+    }
+
     pub fn start_single(&mut self, production: String) -> Result<(), CalyxError> {
         self.single_rule("start", production)
     }
@@ -34,31 +43,37 @@ impl Grammar {
         self.registry.define_rule(term, &branch)
     }
 
-    pub fn uniform_rule(
-        &mut self,
-        term: &str,
-        production: Vec<String>,
-    ) -> Result<(), CalyxError> {
+    pub fn uniform_rule(&mut self, term: &str, production: Vec<String>) -> Result<(), CalyxError> {
         self.registry.define_rule(term, &production)
+    }
+
+    pub fn generate(&mut self) -> Result<ExpansionTree, CalyxError> {
+        self.generate_from("start")
+    }
+
+    pub fn generate_from(&mut self, start_symbol: &str) -> Result<ExpansionTree, CalyxError> {
+        let mut eval_context = EvaluationContext::new(self);
+        let start_symbol = start_symbol.to_string();
+        eval_context.expand_and_evaluate(&start_symbol)
     }
 }
 
 impl Options {
-    fn new<R: rand::RngCore + 'static>(strict: bool, random_source: R) -> Options {
+    pub fn new<R: rand::RngCore + 'static>(strict: bool, random_source: R) -> Options {
         Options {
             strict,
             random_source: Box::new(random_source),
         }
     }
 
-    fn new_lenient<R: rand::RngCore + 'static>(random_source: R) -> Options {
+    pub fn new_lenient<R: rand::RngCore + 'static>(random_source: R) -> Options {
         Options {
             strict: false,
             random_source: Box::new(random_source),
         }
     }
 
-    fn strict(&self) -> bool {
+    pub fn strict(&self) -> bool {
         self.strict
     }
 }
