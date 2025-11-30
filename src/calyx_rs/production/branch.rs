@@ -1,8 +1,10 @@
-use crate::calyx_rs::{evaluation, CalyxError};
-use crate::calyx_rs::production::{Production, ProductionBranch};
 use crate::calyx_rs::evaluation::EvaluationContext;
-use rand::seq::IndexedRandom;
+use crate::calyx_rs::expansion_tree::ExpansionType::Template;
 use crate::calyx_rs::expansion_tree::{ExpansionTree, ExpansionType};
+use crate::calyx_rs::production::node::TemplateNode;
+use crate::calyx_rs::production::{Production, ProductionBranch};
+use crate::calyx_rs::{CalyxError, evaluation};
+use rand::seq::IndexedRandom;
 
 pub(crate) struct EmptyBranch {}
 
@@ -21,8 +23,21 @@ impl ProductionBranch for EmptyBranch {
     }
 }
 
-struct UniformBranch {
-    choices: Vec<Box<dyn Production>>,
+pub(crate) struct UniformBranch {
+    choices: Vec<TemplateNode>,
+}
+
+impl UniformBranch {
+    pub(crate) fn parse(raw: &Vec<String>) -> Result<UniformBranch, CalyxError> {
+        let mut choices: Vec<TemplateNode> = Vec::new();
+
+        for term in raw {
+            let template_node = TemplateNode::parse(term)?;
+            choices.push(template_node)
+        }
+
+        Ok(UniformBranch { choices })
+    }
 }
 
 impl ProductionBranch for UniformBranch {

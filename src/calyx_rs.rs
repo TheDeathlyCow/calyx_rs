@@ -1,6 +1,6 @@
-mod production;
 mod evaluation;
 mod expansion_tree;
+mod production;
 
 pub struct Options {
     strict: bool,
@@ -15,13 +15,31 @@ pub struct Grammar {
 pub enum CalyxError {
     UndefinedRule { rule_name: String },
     UndefinedFilter { filter_name: String },
+    DuplicateRule { rule_name: String },
     ExpandedEmptyBranch,
     InvalidExpression { expression: String },
 }
 
 impl Grammar {
-    pub fn start(&self, start_name: &str) -> Result<(), CalyxError> {
-        Ok(())
+    pub fn start_single(&mut self, production: String) -> Result<(), CalyxError> {
+        self.single_rule("start", production)
+    }
+
+    pub fn start_uniform(&mut self, production: Vec<String>) -> Result<(), CalyxError> {
+        self.uniform_rule("start", production)
+    }
+
+    pub fn single_rule(&mut self, term: &str, production: String) -> Result<(), CalyxError> {
+        let branch = vec![production];
+        self.registry.define_rule(term, &branch)
+    }
+
+    pub fn uniform_rule(
+        &mut self,
+        term: &str,
+        production: Vec<String>,
+    ) -> Result<(), CalyxError> {
+        self.registry.define_rule(term, &production)
     }
 }
 

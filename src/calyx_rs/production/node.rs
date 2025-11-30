@@ -25,7 +25,7 @@ impl Production for ExpressionNode {
     }
 }
 
-struct TemplateNode {
+pub(crate) struct TemplateNode {
     concat_nodes: Vec<Box<dyn Production>>,
 }
 

@@ -1,6 +1,7 @@
 use crate::calyx_rs::expansion_tree::ExpansionTree;
-use crate::calyx_rs::production::branch::EmptyBranch;
 use crate::calyx_rs::production::ProductionBranch;
+use crate::calyx_rs::production::branch::EmptyBranch;
+use crate::calyx_rs::production::branch::UniformBranch;
 use crate::calyx_rs::{CalyxError, Options};
 use std::collections::HashMap;
 
@@ -18,7 +19,28 @@ impl Registry {
         }
     }
 
-    pub fn expand(&self, symbol: &String, options: &Options) -> Result<&dyn ProductionBranch, CalyxError> {
+    pub fn define_rule(
+        &mut self,
+        symbol: &str,
+        production: &Vec<String>,
+    ) -> Result<(), CalyxError> {
+        let symbol = symbol.to_string();
+        
+        if self.rules.contains_key(&symbol) {
+            return Err(CalyxError::DuplicateRule { rule_name: symbol });
+        }
+
+        let branch = UniformBranch::parse(production)?;
+        self.rules.insert(symbol, Box::new(branch));
+
+        Ok(())
+    }
+
+    pub fn expand(
+        &self,
+        symbol: &String,
+        options: &Options,
+    ) -> Result<&dyn ProductionBranch, CalyxError> {
         let stored_rule = self.rules.get(symbol);
 
         match stored_rule {
