@@ -11,6 +11,7 @@ pub struct Grammar {
     registry: evaluation::Registry,
 }
 
+#[derive(Debug)]
 pub enum CalyxError {
     UndefinedRule { rule_name: String },
     UndefinedFilter { filter_name: String },
