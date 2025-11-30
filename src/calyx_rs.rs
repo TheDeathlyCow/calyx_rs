@@ -1,5 +1,5 @@
 use crate::calyx_rs::evaluation::{EvaluationContext, Registry};
-use crate::calyx_rs::expansion_tree::ExpansionTree;
+use crate::calyx_rs::expansion_tree::{ExpansionTree, ExpansionType};
 
 mod evaluation;
 mod expansion_tree;
@@ -54,7 +54,9 @@ impl Grammar {
     pub fn generate_from(&mut self, start_symbol: &str) -> Result<ExpansionTree, CalyxError> {
         let mut eval_context = EvaluationContext::new(self);
         let start_symbol = start_symbol.to_string();
-        eval_context.expand_and_evaluate(&start_symbol)
+        let tree = eval_context.expand_and_evaluate(&start_symbol)?;
+
+        Ok(ExpansionTree::chain(ExpansionType::Result, tree))
     }
 }
 
