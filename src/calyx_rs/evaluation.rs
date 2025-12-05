@@ -86,7 +86,14 @@ impl<'a> EvaluationContext<'a> {
                 .insert(symbol.clone(), expanded_tree);
         }
 
-        Ok(self.memoized_expansions[symbol].clone())
+        let tree =
+            self.memoized_expansions
+                .get(symbol)
+                .ok_or_else(|| CalyxError::UndefinedRule {
+                    rule_name: symbol.clone(),
+                })?;
+
+        Ok(tree.clone())
     }
 
     pub(crate) fn expand_and_evaluate(
@@ -105,9 +112,5 @@ impl<'a> EvaluationContext<'a> {
 
     pub(crate) fn options(&mut self) -> &mut Options {
         self.options
-    }
-
-    pub(crate) fn memoized_expansions(&self) -> &HashMap<String, ExpansionTree> {
-        &self.memoized_expansions
     }
 }

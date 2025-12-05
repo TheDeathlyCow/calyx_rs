@@ -25,6 +25,18 @@ impl Production for ExpressionNode {
     }
 }
 
+struct MemoNode {
+    symbol: String,
+}
+
+impl Production for MemoNode {
+    fn evaluate(&self, eval_context: &mut EvaluationContext) -> Result<ExpansionTree, CalyxError> {
+        let tree = eval_context.memoize_expansion(&self.symbol)?;
+
+        Ok(ExpansionTree::chain(ExpansionType::Memo, tree))
+    }
+}
+
 pub(crate) struct TemplateNode {
     concat_nodes: Vec<Box<dyn Production>>,
 }
@@ -95,9 +107,14 @@ impl TemplateNode {
                 expression: raw_expression.clone(),
             })?;
 
+        let mut raw_expression = raw_expression;
+
         match sigil {
             '@' => {
-                todo!("memo not yet implemented")
+                raw_expression.remove(0);
+                Ok(Box::new(MemoNode {
+                    symbol: raw_expression
+                }))
             }
             '$' => {
                 todo!("unique not yet implemented")
@@ -146,7 +163,7 @@ impl TemplateNode {
 #[cfg(test)]
 mod tests {
     use crate::calyx_rs::production::node::TemplateNode;
-
+    
     #[test]
     fn frag_with_no_delimiters() {
         let frags = TemplateNode::fragment_string("One Two Three");
