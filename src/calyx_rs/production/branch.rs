@@ -4,6 +4,7 @@ use crate::calyx_rs::expansion_tree::{ExpansionTree, ExpansionType};
 use crate::calyx_rs::production::node::TemplateNode;
 use crate::calyx_rs::production::{Production, ProductionBranch};
 use crate::calyx_rs::{CalyxError, evaluation};
+use rand::Rng;
 use rand::seq::IndexedRandom;
 
 pub(crate) struct EmptyBranch {}
@@ -48,7 +49,12 @@ impl UniformBranch {
 
 impl Production for UniformBranch {
     fn evaluate(&self, eval_context: &mut EvaluationContext) -> Result<ExpansionTree, CalyxError> {
-        todo!()
+        let index = eval_context
+            .options()
+            .random_source
+            .random_range(0..self.choices.len());
+        
+        self.evaluate_at(index, eval_context)
     }
 }
 
