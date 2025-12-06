@@ -9,7 +9,7 @@ pub enum ExpansionType {
     Template,
     Expression,
     Memo,
-    Uniq,
+    Unique,
 }
 
 #[derive(Clone)]

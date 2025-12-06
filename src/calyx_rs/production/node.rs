@@ -37,6 +37,18 @@ impl Production for MemoNode {
     }
 }
 
+struct UniqueNode {
+    symbol: String,
+}
+
+impl Production for UniqueNode {
+    fn evaluate(&self, eval_context: &mut EvaluationContext) -> Result<ExpansionTree, CalyxError> {
+        let tree = eval_context.unique_expansion(&self.symbol)?;
+
+        Ok(ExpansionTree::chain(ExpansionType::Unique, tree))
+    }
+}
+
 pub(crate) struct TemplateNode {
     concat_nodes: Vec<Box<dyn Production>>,
 }
@@ -117,7 +129,10 @@ impl TemplateNode {
                 }))
             }
             '$' => {
-                todo!("unique not yet implemented")
+                raw_expression.remove(0);
+                Ok(Box::new(UniqueNode {
+                    symbol: raw_expression
+                }))
             }
             _ => Ok(Box::new(ExpressionNode {
                 reference: raw_expression,
