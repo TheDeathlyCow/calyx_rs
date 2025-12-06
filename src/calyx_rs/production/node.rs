@@ -163,7 +163,7 @@ impl TemplateNode {
 #[cfg(test)]
 mod tests {
     use crate::calyx_rs::production::node::TemplateNode;
-    
+
     #[test]
     fn frag_with_no_delimiters() {
         let frags = TemplateNode::fragment_string("One Two Three");

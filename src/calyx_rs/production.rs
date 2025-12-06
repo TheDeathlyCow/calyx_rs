@@ -12,18 +12,9 @@ pub trait Production {
 pub trait ProductionBranch: Production {
     fn evaluate_at(
         &self,
-        index: isize,
+        index: usize,
         eval_context: &mut EvaluationContext,
     ) -> Result<ExpansionTree, CalyxError>;
 
     fn len(&self) -> usize;
-}
-
-impl<B: ProductionBranch> Production for B {
-    fn evaluate(
-        self: &Self,
-        eval_context: &mut EvaluationContext,
-    ) -> Result<ExpansionTree, CalyxError> {
-        self.evaluate_at(0, eval_context)
-    }
 }

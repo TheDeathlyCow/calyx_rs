@@ -8,10 +8,16 @@ use rand::seq::IndexedRandom;
 
 pub(crate) struct EmptyBranch {}
 
+impl Production for EmptyBranch {
+    fn evaluate(&self, eval_context: &mut EvaluationContext) -> Result<ExpansionTree, CalyxError> {
+        self.evaluate_at(0, eval_context)
+    }
+}
+
 impl ProductionBranch for EmptyBranch {
     fn evaluate_at(
         self: &Self,
-        index: isize,
+        index: usize,
         eval_context: &mut EvaluationContext,
     ) -> Result<ExpansionTree, CalyxError> {
         let exp = ExpansionTree::new_atom("");
@@ -40,17 +46,21 @@ impl UniformBranch {
     }
 }
 
+impl Production for UniformBranch {
+    fn evaluate(&self, eval_context: &mut EvaluationContext) -> Result<ExpansionTree, CalyxError> {
+        todo!()
+    }
+}
+
 impl ProductionBranch for UniformBranch {
     fn evaluate_at(
         &self,
-        index: isize,
+        index: usize,
         eval_context: &mut EvaluationContext,
     ) -> Result<ExpansionTree, CalyxError> {
-        let options = eval_context.options();
-
         let item = self
             .choices
-            .choose(&mut options.random_source)
+            .get(index)
             .ok_or(CalyxError::ExpandedEmptyBranch)?;
 
         let tail = item.evaluate(eval_context)?;

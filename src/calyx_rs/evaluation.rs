@@ -1,8 +1,9 @@
 use crate::calyx_rs::expansion_tree::ExpansionTree;
-use crate::calyx_rs::production::ProductionBranch;
 use crate::calyx_rs::production::branch::EmptyBranch;
 use crate::calyx_rs::production::branch::UniformBranch;
+use crate::calyx_rs::production::ProductionBranch;
 use crate::calyx_rs::{CalyxError, Grammar, Options};
+use rand::seq::SliceRandom;
 use std::collections::HashMap;
 
 pub(crate) struct Registry {
@@ -63,16 +64,35 @@ pub(crate) struct EvaluationContext<'a> {
     registry: &'a Registry,
     options: &'a mut Options,
     memoized_expansions: HashMap<String, ExpansionTree>,
+    cycles: HashMap<String, UniqueCycle>,
 }
 
 impl<'a> EvaluationContext<'a> {
     pub(crate) fn new(grammar: &'a mut Grammar) -> EvaluationContext<'a> {
-        let memoized_expansions = HashMap::new();
         EvaluationContext {
             registry: &grammar.registry,
             options: &mut grammar.options,
-            memoized_expansions,
+            memoized_expansions: HashMap::new(),
+            cycles: HashMap::new(),
         }
+    }
+
+    pub(crate) fn unique_expansion(&mut self, symbol: &String) -> Result<ExpansionTree, CalyxError> {
+        let rule = self.registry.expand(symbol, self.options)?;
+
+        if !self.cycles.contains_key(symbol) {
+            let cycle = UniqueCycle::new(rule.len());
+
+            self.cycles.insert(symbol.clone(), cycle);
+        }
+
+        let cycle = self.cycles.get_mut(symbol).ok_or_else(|| {
+            CalyxError::UndefinedRule { rule_name: symbol.clone() }
+        })?;
+
+        let index = cycle.poll(self.options);
+
+        rule.evaluate_at(index, self)
     }
 
     pub(crate) fn memoize_expansion(
@@ -112,5 +132,46 @@ impl<'a> EvaluationContext<'a> {
 
     pub(crate) fn options(&mut self) -> &mut Options {
         self.options
+    }
+}
+
+struct UniqueCycle {
+    count: usize,
+    index: usize,
+    sequence: Vec<usize>,
+}
+
+impl UniqueCycle {
+    fn new(count: usize) -> UniqueCycle {
+        let sequence = Vec::with_capacity(count);
+        UniqueCycle {
+            count,
+            index: count - 1,
+            sequence,
+        }
+    }
+
+    fn populate_sequence(&mut self) {
+        self.sequence.clear();
+        for i in 0..self.count {
+            self.sequence.push(i);
+        }
+    }
+
+    fn shuffle(&mut self, options: &mut Options) {
+        self.populate_sequence();
+        let rng = &mut *options.random_source;
+        self.sequence.as_mut_slice().shuffle(rng);
+    }
+
+    fn poll(&mut self, options: &mut Options) -> usize {
+        self.index += 1;
+
+        if (self.index >= self.count) {
+            self.shuffle(options);
+            self.index = 0;
+        }
+
+        self.sequence.get(self.index).copied().unwrap_or(0)
     }
 }
