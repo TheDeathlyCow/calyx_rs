@@ -1,22 +1,24 @@
 use crate::calyx_rs::expansion_tree::ExpansionTree;
+use crate::calyx_rs::filter::Filter;
+use crate::calyx_rs::production::ProductionBranch;
 use crate::calyx_rs::production::branch::EmptyBranch;
 use crate::calyx_rs::production::branch::UniformBranch;
-use crate::calyx_rs::production::ProductionBranch;
 use crate::calyx_rs::{CalyxError, Grammar, Options};
 use rand::seq::SliceRandom;
 use std::collections::HashMap;
 
 pub(crate) struct Registry {
     rules: HashMap<String, Box<dyn ProductionBranch>>,
+    filters: HashMap<String, Box<dyn Filter>>,
     // this will always be an empty branch but is stored in the struct so that the lifetime matches
     empty_rule: EmptyBranch,
 }
 
 impl Registry {
     pub(crate) fn new() -> Self {
-        let rules: HashMap<String, Box<dyn ProductionBranch>> = HashMap::new();
         Self {
-            rules,
+            rules: HashMap::new(),
+            filters: HashMap::new(),
             empty_rule: EmptyBranch {},
         }
     }
@@ -58,6 +60,10 @@ impl Registry {
             }
         }
     }
+
+    pub(crate) fn get_filter(&self, filter_name: &String) -> Option<&dyn Filter> {
+        self.filters.get(filter_name).map(|v| v.as_ref())
+    }
 }
 
 pub(crate) struct EvaluationContext<'a> {
@@ -77,7 +83,10 @@ impl<'a> EvaluationContext<'a> {
         }
     }
 
-    pub(crate) fn unique_expansion(&mut self, symbol: &String) -> Result<ExpansionTree, CalyxError> {
+    pub(crate) fn unique_expansion(
+        &mut self,
+        symbol: &String,
+    ) -> Result<ExpansionTree, CalyxError> {
         let rule = self.registry.expand(symbol, self.options)?;
 
         if !self.cycles.contains_key(symbol) {
@@ -86,9 +95,12 @@ impl<'a> EvaluationContext<'a> {
             self.cycles.insert(symbol.clone(), cycle);
         }
 
-        let cycle = self.cycles.get_mut(symbol).ok_or_else(|| {
-            CalyxError::UndefinedRule { rule_name: symbol.clone() }
-        })?;
+        let cycle = self
+            .cycles
+            .get_mut(symbol)
+            .ok_or_else(|| CalyxError::UndefinedRule {
+                rule_name: symbol.clone(),
+            })?;
 
         let index = cycle.poll(self.options);
 

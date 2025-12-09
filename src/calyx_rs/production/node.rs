@@ -25,6 +25,33 @@ impl Production for ExpressionNode {
     }
 }
 
+struct ExpressionChain {
+    rule: ExpressionNode,
+    filter_names: Vec<String>,
+}
+
+impl Production for ExpressionChain {
+    fn evaluate(&self, eval_context: &mut EvaluationContext) -> Result<ExpansionTree, CalyxError> {
+        let mut initial_string: String = self.rule.evaluate(eval_context)?.flatten();
+
+        for filter_name in &self.filter_names {
+            let filter = eval_context
+                .registry()
+                .get_filter(filter_name)
+                .ok_or_else(|| CalyxError::UndefinedFilter {
+                    filter_name: filter_name.clone(),
+                })?;
+
+            filter.apply(&mut initial_string);
+        }
+
+        Ok(ExpansionTree::chain(
+            ExpansionType::ExpressionChain,
+            ExpansionTree::new_atom(initial_string.as_str()),
+        ))
+    }
+}
+
 struct MemoNode {
     symbol: String,
 }
@@ -125,13 +152,13 @@ impl TemplateNode {
             '@' => {
                 raw_expression.remove(0);
                 Ok(Box::new(MemoNode {
-                    symbol: raw_expression
+                    symbol: raw_expression,
                 }))
             }
             '$' => {
                 raw_expression.remove(0);
                 Ok(Box::new(UniqueNode {
-                    symbol: raw_expression
+                    symbol: raw_expression,
                 }))
             }
             _ => Ok(Box::new(ExpressionNode {

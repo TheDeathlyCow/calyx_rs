@@ -8,6 +8,7 @@ pub enum ExpansionType {
     AffixTable,
     Template,
     Expression,
+    ExpressionChain,
     Memo,
     Unique,
 }

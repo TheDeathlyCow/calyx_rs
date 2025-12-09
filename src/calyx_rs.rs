@@ -2,7 +2,8 @@ use crate::calyx_rs::evaluation::{EvaluationContext, Registry};
 use crate::calyx_rs::expansion_tree::{ExpansionTree, ExpansionType};
 
 mod evaluation;
-mod expansion_tree;
+pub mod expansion_tree;
+pub mod filter;
 mod production;
 
 pub struct Options {
