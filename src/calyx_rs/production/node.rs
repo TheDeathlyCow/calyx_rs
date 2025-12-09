@@ -26,13 +26,13 @@ impl Production for ExpressionNode {
 }
 
 struct ExpressionChain {
-    rule: ExpressionNode,
+    expression_rule: Box<dyn Production>,
     filter_names: Vec<String>,
 }
 
 impl Production for ExpressionChain {
     fn evaluate(&self, eval_context: &mut EvaluationContext) -> Result<ExpansionTree, CalyxError> {
-        let mut initial_string: String = self.rule.evaluate(eval_context)?.flatten();
+        let mut initial_string: String = self.expression_rule.evaluate(eval_context)?.flatten();
 
         for filter_name in &self.filter_names {
             let filter = eval_context
@@ -131,10 +131,10 @@ impl TemplateNode {
             .map(|s| s.to_string())
             .collect::<Vec<String>>();
 
-        if components.is_empty() {
+        if components.len() < 2 {
             Self::parse_simple_expression(raw_expression)
         } else {
-            Self::parse_expression_chain(raw_expression, &components)
+            Self::parse_expression_chain(components)
         }
     }
 
@@ -168,10 +168,15 @@ impl TemplateNode {
     }
 
     fn parse_expression_chain(
-        raw_expression: String,
-        raw_chain: &Vec<String>,
+        mut raw_chain: Vec<String>,
     ) -> Result<Box<dyn Production>, CalyxError> {
-        todo!("expr chain not yet implemented")
+        let expression_name = raw_chain.remove(0);
+        let expression_rule = Self::parse_simple_expression(expression_name)?;
+
+        Ok(Box::new(ExpressionChain {
+            expression_rule,
+            filter_names: raw_chain,
+        }))
     }
 
     fn fragment_string(raw: &str) -> Vec<String> {
