@@ -1,7 +1,7 @@
 use crate::calyx_rs::expansion_tree::ExpansionTree;
 use crate::calyx_rs::filter::{Filter, create_builtin_filters};
 use crate::calyx_rs::production::ProductionBranch;
-use crate::calyx_rs::production::branch::EmptyBranch;
+use crate::calyx_rs::production::branch::{EmptyBranch, WeightedBranch};
 use crate::calyx_rs::production::branch::UniformBranch;
 use crate::calyx_rs::{CalyxError, Grammar, Options};
 use rand::seq::SliceRandom;
@@ -33,6 +33,21 @@ impl Registry {
         }
 
         let branch = UniformBranch::parse(production)?;
+        self.rules.insert(symbol, Box::new(branch));
+
+        Ok(())
+    }
+
+    pub(crate) fn define_weighted_rule(
+        &mut self,
+        symbol: String,
+        production: &HashMap<String, f64>,
+    ) -> Result<(), CalyxError> {
+        if self.rules.contains_key(&symbol) {
+            return Err(CalyxError::DuplicateRule { rule_name: symbol });
+        }
+
+        let branch = WeightedBranch::parse(production)?;
         self.rules.insert(symbol, Box::new(branch));
 
         Ok(())

@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use crate::calyx_rs::evaluation::{EvaluationContext, Registry};
 use crate::calyx_rs::expansion_tree::{ExpansionTree, ExpansionType};
 
@@ -26,6 +27,7 @@ pub enum CalyxError {
     DuplicateRule { rule_name: String },
     ExpandedEmptyBranch,
     InvalidExpression { expression: String },
+    InvalidWeight { weight: f64 },
 }
 
 impl Grammar {
@@ -78,7 +80,17 @@ impl Grammar {
     /// - [CalyxError::InvalidExpression] if the production could not be parsed.
     ///
     pub fn start_uniform(&mut self, production: &Vec<String>) -> Result<(), CalyxError> {
-        self.uniform_rule(String::from("start"), &production)
+        self.uniform_rule(String::from("start"), production)
+    }
+
+    /// Defines a new uniform expansion of the `start` rule.
+    ///
+    /// # Errors
+    /// - [CalyxError::DuplicateRule] if the start rule is already defined.
+    /// - [CalyxError::InvalidExpression] if the production could not be parsed.
+    ///
+    pub fn start_weighted(&mut self, production: &HashMap<String, f64>) -> Result<(), CalyxError> {
+        self.weighted_rule(String::from("start"), production)
     }
 
     /// Defines a new single expansion of the given term.
@@ -86,6 +98,7 @@ impl Grammar {
     /// # Errors
     /// - [CalyxError::DuplicateRule] if the term is already defined.
     /// - [CalyxError::InvalidExpression] if the production could not be parsed.
+    /// - [CalyxError::InvalidWeight] if any weight in the production is not [finite](f64::is_finite).
     ///
     pub fn single_rule(&mut self, term: String, production: String) -> Result<(), CalyxError> {
         let branch = vec![production];
@@ -103,7 +116,22 @@ impl Grammar {
         term: String,
         production: &Vec<String>,
     ) -> Result<(), CalyxError> {
-        self.registry.define_rule(term, &production)
+        self.registry.define_rule(term, production)
+    }
+
+    /// Defines a new weighted expansion of the given term.
+    ///
+    /// # Errors
+    /// - [CalyxError::DuplicateRule] if the term is already defined.
+    /// - [CalyxError::InvalidExpression] if the production could not be parsed.
+    /// - [CalyxError::InvalidWeight] if any weight in the production is not [finite](f64::is_finite).
+    ///
+    pub fn weighted_rule(
+        &mut self,
+        term: String,
+        production: &HashMap<String, f64>,
+    ) -> Result<(), CalyxError> {
+        self.registry.define_weighted_rule(term, production)
     }
 
     /// Generate an expansion of this grammar, starting from the rule named `start`.
@@ -210,6 +238,7 @@ impl Options {
 
 #[cfg(test)]
 mod grammar_tests {
+    use std::collections::HashMap;
     use crate::calyx_rs::expansion_tree::ExpansionType;
     use crate::calyx_rs::{CalyxError, Grammar};
     use rand::SeedableRng;
@@ -255,6 +284,87 @@ mod grammar_tests {
             .expect("Error during grammar generation")
             .flatten();
         assert_eq!(text, "one three three");
+    }
+
+    #[test]
+    fn evaluate_weighted_rule() {
+        let rng = StdRng::seed_from_u64(12345);
+        let mut grammar = Grammar::from_rng(rng);
+
+        assert!(
+            grammar
+                .start_single("{num} {num} {num} {num} {num} {num}".to_string())
+                .is_ok()
+        );
+
+        assert!(
+            grammar
+                .weighted_rule(
+                    String::from("num"),
+                    &HashMap::from([
+                        (String::from("1"), 1.0),
+                        (String::from("2"), 2.0),
+                        (String::from("3"), 3.0),
+                    ])
+                )
+                .is_ok()
+        );
+
+        let text = grammar
+            .generate()
+            .expect("Error during grammar generation")
+            .flatten();
+        assert_eq!(text, "3 3 3 3 3 1");
+    }
+
+    #[test]
+    fn parse_negative_weight_fails() {
+        let rng = StdRng::seed_from_u64(12345);
+        let mut grammar = Grammar::from_rng(rng);
+
+        assert!(
+            grammar
+                .start_single("{num} {num} {num} {num} {num} {num}".to_string())
+                .is_ok()
+        );
+
+        assert!(
+            grammar
+                .weighted_rule(
+                    String::from("num"),
+                    &HashMap::from([
+                        (String::from("1"), -1.0),
+                        (String::from("2"), 2.0),
+                        (String::from("3"), 3.0),
+                    ])
+                )
+                .is_err()
+        );
+    }
+
+    #[test]
+    fn parse_zero_weight_fails() {
+        let rng = StdRng::seed_from_u64(12345);
+        let mut grammar = Grammar::from_rng(rng);
+
+        assert!(
+            grammar
+                .start_single("{num} {num} {num} {num} {num} {num}".to_string())
+                .is_ok()
+        );
+
+        assert!(
+            grammar
+                .weighted_rule(
+                    String::from("num"),
+                    &HashMap::from([
+                        (String::from("1"), 0.0),
+                        (String::from("2"), 2.0),
+                        (String::from("3"), 3.0),
+                    ])
+                )
+                .is_err()
+        );
     }
 
     #[test]
