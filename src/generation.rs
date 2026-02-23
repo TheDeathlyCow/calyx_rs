@@ -148,8 +148,8 @@ impl Grammar {
     /// # Examples
     ///
     /// ```
-    /// use calyx_rs::calyx::expansion_tree::ExpansionTree;
-    /// use calyx_rs::calyx::{CalyxError, Grammar};
+    /// use calyx_rs::generation::expansion_tree::ExpansionTree;
+    /// use calyx_rs::generation::{CalyxError, Grammar};
     ///
     /// let mut grammar: Grammar = Grammar::new();
     /// assert!(grammar.start_single(String::from("{odd_number} {even_number}")).is_ok());

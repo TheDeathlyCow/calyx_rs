@@ -189,4 +189,9 @@ mod readme_examples {
         let rng = StdRng::seed_from_u64(12345);
         let grammar = Grammar::from_rng(rng);
     }
+
+    #[test]
+    fn filter_example() {
+        
+    }
 }

@@ -24,6 +24,7 @@ cargo test
 # License
 
 A Rust port of the Calyx generative grammar library
+
 Copyright (C) TheDeathlyCow
 
 This program is free software: you can redistribute it and/or modify
@@ -301,7 +302,8 @@ The default generator used will be a handle to the local `ThreadRng`.
 
 ## Filters
 
-TODO
+Dot-notation is supported in template expressions, allowing you to call a variety of different processing functions on
+the string returned from a rule.
 
 ## Memoized Rules
 

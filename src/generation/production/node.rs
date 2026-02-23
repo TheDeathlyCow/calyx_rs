@@ -41,7 +41,7 @@ impl Production for ExpressionChain {
                     filter_name: filter_name.clone(),
                 })?;
 
-            filter(&mut initial_string);
+            initial_string = filter(initial_string);
         }
 
         Ok(ExpansionTree::chain(
