@@ -63,6 +63,8 @@ fn main() {
 }
 ```
 
+[See Example Here](./examples/ex1_define_rule.rs)
+
 Once the grammar is made, call the `generate()` method to retrieve a randomly generated result. This result contains a
 tree representation of the generation output, but it can be converted to text with `flatten()`:
 
@@ -84,124 +86,23 @@ fn main() {
 }
 ```
 
+[See Example Here](./examples/ex2_generate_simple_rule.rs)
+
 Obviously, this hardcoded sentence isn’t very interesting by itself. Possible variations can be added to the text by
 adding additional rules which provide a named set of text strings. The rule delimiter syntax (`{}`) can be used to
 substitute the generated content of other rules.
 
-```rust
-use calyx_rs::generation::Grammar;
-
-fn main() {
-    let mut grammar = Grammar::new();
-    grammar
-        .start_single(String::from("{greeting} world."))
-        .expect("Error defining start rule");
-
-    grammar
-        .uniform_rule(
-            String::from("greeting"),
-            &vec![
-                String::from("Hello"),
-                String::from("Hi"),
-                String::from("Hey"),
-                String::from("Yo"),
-            ],
-        )
-        .expect("Error defining greeting rule");
-
-    let text = grammar
-        .generate()
-        .expect("Error during generation")
-        .flatten();
-
-    println!("{}", text);
-    // > Hello world.
-}
-```
+[See Example Here](./examples/ex3_uniform_rule_example.rs)
 
 Each time `generate()` runs, it evaluates the tree and randomly selects variations of rules to construct a resulting
 string.
 
-<details>
-<summary>Show Example</summary>
-
-```rust
-use calyx_rs::generation::Grammar;
-
-fn main() {
-    let mut grammar = Grammar::new();
-    grammar
-        .start_single(String::from("{greeting} world."))
-        .expect("Error defining start rule");
-
-    grammar
-        .uniform_rule(
-            String::from("greeting"),
-            &vec![
-                String::from("Hello"),
-                String::from("Hi"),
-                String::from("Hey"),
-                String::from("Yo"),
-            ],
-        )
-        .expect("Error defining greeting rule");
-
-    let text = grammar
-        .generate()
-        .expect("Error during generation")
-        .flatten();
-
-    println!("{}", text);
-    // > Hello world.
-    println!("{}", text);
-    // > Hey world.
-    println!("{}", text);
-    // > Hi world.
-    println!("{}", text);
-    // > Yo world.
-}
-```
-
-</details>
+[See Example Here](./examples/ex4_uniform_rule_multiple_generation_example.rs)
 
 In the previous example, the different greetings were picked randomly on each generation with a uniform distribution.
 However, we can also supply a custom weighted distribution for the different greetings:
 
-<details>
-<summary>Show Example</summary>
-
-```rust
-use calyx_rs::generation::Grammar;
-use std::collections::HashMap;
-
-fn main() {
-    let mut grammar = Grammar::new();
-    grammar
-        .start_single(String::from("{greeting} world."))
-        .expect("Error defining start rule");
-
-    grammar
-        .weighted_rule(
-            String::from("greeting"),
-            &HashMap::from([
-                (String::from("Hello"), 5.0),
-                (String::from("Hi"), 2.0),
-                (String::from("Hey"), 2.0),
-                (String::from("Yo"), 1.0),
-            ]),
-        )
-        .expect("Error defining greeting rule");
-
-    let text = grammar
-        .generate()
-        .expect("Error during generation")
-        .flatten();
-
-    println!("{}", text);
-}
-```
-
-</details>
+[See Example Here](./examples/ex5_weighted_rule_example.rs)
 
 In this case, the grammar will pick "Hello" 50% of the time, "Hi" and "Hey" 20% of the time, and "Yo" 10% of the time
 when greeting is expanded.
@@ -209,89 +110,13 @@ when greeting is expanded.
 By convention, the `start` rule specifies the default starting point for generating the final text. You can start from
 any other named rule by passing it explicitly to the `generate_from()` method.
 
-<details>
-<summary>Show Example</summary>
-
-```rust
-use calyx_rs::generation::Grammar;
-
-fn main() {
-    let mut grammar = Grammar::new();
-
-    grammar
-        .single_rule(String::from("hello"), String::from("Hello world."))
-        .expect("Error defining greeting rule");
-
-    let text = grammar
-        .generate_from(&String::from("hello"))
-        .expect("Error during generation")
-        .flatten();
-
-    println!("{}", text);
-    // > Hello world.
-}
-```
-
-</details>
+[See Example Here](./examples/ex6_custom_start_rule_example.rs)
 
 ## Template Expressions
 
 Basic rule substitution uses single curly brackets as delimiters for template expressions:
 
-<details>
-<summary>Show Example</summary>
-
-```rust
-use calyx_rs::generation::Grammar;
-
-fn main() {
-    let mut grammar = Grammar::new();
-
-    grammar
-        .start_single(String::from("{colour} {fruit}"))
-        .expect("Error defining start rule");
-
-    grammar
-        .uniform_rule(
-            String::from("colour"),
-            &vec![
-                String::from("red"),
-                String::from("green"),
-                String::from("yellow"),
-            ],
-        )
-        .expect("Error defining colour rule");
-
-    grammar
-        .uniform_rule(
-            String::from("fruit"),
-            &vec![
-                String::from("apple"),
-                String::from("pear"),
-                String::from("tomato"),
-            ],
-        )
-        .expect("Error defining colour rule");
-
-    for _ in 0..6 {
-        let text = grammar
-            .generate()
-            .expect("Error during generation")
-            .flatten();
-
-        print!("{}", text);
-    }
-
-    // > "yellow pear"
-    // > "red apple"
-    // > "green tomato"
-    // > "red pear"
-    // > "yellow tomato"
-    // > "green apple"
-}
-```
-
-</details>
+[See Example Here](./examples/ex7_random_fruit.rs)
 
 ## Random Sampling
 
@@ -300,16 +125,17 @@ the [rand](https://docs.rs/rand/latest/rand/) library. A seeded grammar can be c
 `Options`.
 
 ```rust
-// ...
-use rand::prelude::StdRng;
+use calyx_rs::generation::Grammar;
 use rand::SeedableRng;
+use rand::prelude::StdRng;
 
-#[test]
-fn rng_example() {
+fn main() {
     let rng = StdRng::seed_from_u64(12345);
     let grammar = Grammar::from_rng(rng);
 }
 ```
+
+[See Example Here](./examples/ex8_seeded_rng.rs)
 
 The default generator used will be a handle to the local `ThreadRng`.
 
@@ -318,65 +144,11 @@ The default generator used will be a handle to the local `ThreadRng`.
 Dot-notation is supported in template expressions, allowing you to call a variety of different processing functions on
 the string returned from a rule.
 
-<details>
-<summary>Show Example</summary>
-
-```rust
-use calyx_rs::generation::Grammar;
-
-fn main() {
-    let mut grammar = Grammar::new();
-
-    grammar
-        .start_single(String::from("{greeting.uppercase} there"))
-        .expect("Error defining start rule");
-
-    grammar
-        .single_rule(String::from("greeting"), String::from("hello"))
-        .expect("Error defining greeting rule");
-
-    let text = grammar
-        .generate()
-        .expect("Error during generation")
-        .flatten();
-
-    println!("{}", text);
-    // > HELLO there
-}
-```
-
-</details>
+[See Example Here](./examples/ex9_filters.rs)
 
 Multiple filters can also be chained onto the same rule, and are evaluated left to right:
 
-<details>
-<summary>Show Example</summary>
-
-```rust
-use calyx_rs::generation::Grammar;
-
-fn main() {
-    let mut grammar = Grammar::new();
-
-    grammar
-        .start_single(String::from("{greeting.uppercase.lowercase} there"))
-        .expect("Error defining start rule");
-
-    grammar
-        .single_rule(String::from("greeting"), String::from("hello"))
-        .expect("Error defining greeting rule");
-
-    let text = grammar
-        .generate()
-        .expect("Error during generation")
-        .flatten();
-
-    println!("{}", text);
-    // > hello there
-}
-```
-
-</details>
+[See Example Here](./examples/ex10_multiple_filters.rs)
 
 The full set of builtin filter functions is defined in [`filter.rs`](./src/generation/filter.rs).
 
