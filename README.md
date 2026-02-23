@@ -42,6 +42,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 # Usage and Examples
 
+All the examples shown here can be found in the [examples](./examples) directory, to allow you to play around with them
+as you please.
+
 ## Generation Basics
 
 Add the library to your `Cargo.toml` and construct a `Grammar` to define rules and generate text.
@@ -49,8 +52,7 @@ Add the library to your `Cargo.toml` and construct a `Grammar` to define rules a
 ```rust
 use calyx_rs::generation::Grammar;
 
-#[test]
-fn define_rule() {
+fn main() {
     let mut grammar: Grammar = Grammar::new();
 
     // This returns a Result to allow you to check for errors during construction, don't just
@@ -68,8 +70,7 @@ tree representation of the generation output, but it can be converted to text wi
 use calyx_rs::generation::expansion_tree::ExpansionTree;
 use calyx_rs::generation::{CalyxError, Grammar};
 
-#[test]
-fn generate_simple_rule() {
+fn main() {
     let mut grammar: Grammar = Grammar::new();
     grammar
         .start_single(String::from("Hello world."))
@@ -78,7 +79,8 @@ fn generate_simple_rule() {
     let expansion: Result<ExpansionTree, CalyxError> = grammar.generate();
     let text: String = expansion.expect("Error during generation").flatten();
 
-    assert_eq!(text, "Hello world.");
+    println!("{}", text);
+    // > Hello world.
 }
 ```
 
@@ -87,11 +89,9 @@ adding additional rules which provide a named set of text strings. The rule deli
 substitute the generated content of other rules.
 
 ```rust
-use calyx_rs::generation::expansion_tree::ExpansionTree;
-use calyx_rs::generation::{CalyxError, Grammar};
+use calyx_rs::generation::Grammar;
 
-#[test]
-fn uniform_rule_example() {
+fn main() {
     let mut grammar = Grammar::new();
     grammar
         .start_single(String::from("{greeting} world."))
@@ -122,12 +122,13 @@ fn uniform_rule_example() {
 Each time `generate()` runs, it evaluates the tree and randomly selects variations of rules to construct a resulting
 string.
 
-```rust
-use calyx_rs::generation::expansion_tree::ExpansionTree;
-use calyx_rs::generation::{CalyxError, Grammar};
+<details>
+<summary>Show Example</summary>
 
-#[test]
-fn uniform_rule_multiple_generation_example() {
+```rust
+use calyx_rs::generation::Grammar;
+
+fn main() {
     let mut grammar = Grammar::new();
     grammar
         .start_single(String::from("{greeting} world."))
@@ -161,15 +162,19 @@ fn uniform_rule_multiple_generation_example() {
 }
 ```
 
+</details>
+
 In the previous example, the different greetings were picked randomly on each generation with a uniform distribution.
 However, we can also supply a custom weighted distribution for the different greetings:
 
+<details>
+<summary>Show Example</summary>
+
 ```rust
-// ...
+use calyx_rs::generation::Grammar;
 use std::collections::HashMap;
 
-#[test]
-fn weighted_rule_example() {
+fn main() {
     let mut grammar = Grammar::new();
     grammar
         .start_single(String::from("{greeting} world."))
@@ -196,24 +201,25 @@ fn weighted_rule_example() {
 }
 ```
 
+</details>
+
 In this case, the grammar will pick "Hello" 50% of the time, "Hi" and "Hey" 20% of the time, and "Yo" 10% of the time
 when greeting is expanded.
 
 By convention, the `start` rule specifies the default starting point for generating the final text. You can start from
 any other named rule by passing it explicitly to the `generate_from()` method.
 
-```rust
-// ...
+<details>
+<summary>Show Example</summary>
 
-#[test]
-fn custom_start_rule_example() {
+```rust
+use calyx_rs::generation::Grammar;
+
+fn main() {
     let mut grammar = Grammar::new();
 
     grammar
-        .single_rule(
-            String::from("hello"),
-            String::from("Hello world.")
-        )
+        .single_rule(String::from("hello"), String::from("Hello world."))
         .expect("Error defining greeting rule");
 
     let text = grammar
@@ -221,19 +227,24 @@ fn custom_start_rule_example() {
         .expect("Error during generation")
         .flatten();
 
-    assert_eq!(text, "Hello world.");
+    println!("{}", text);
+    // > Hello world.
 }
 ```
+
+</details>
 
 ## Template Expressions
 
 Basic rule substitution uses single curly brackets as delimiters for template expressions:
 
-```rust
-// ...
+<details>
+<summary>Show Example</summary>
 
-#[test]
-fn random_fruit() {
+```rust
+use calyx_rs::generation::Grammar;
+
+fn main() {
     let mut grammar = Grammar::new();
 
     grammar
@@ -280,6 +291,8 @@ fn random_fruit() {
 }
 ```
 
+</details>
+
 ## Random Sampling
 
 Calyx allows for you to use any type that implements the `rand::RngCore` trait from
@@ -305,6 +318,91 @@ The default generator used will be a handle to the local `ThreadRng`.
 Dot-notation is supported in template expressions, allowing you to call a variety of different processing functions on
 the string returned from a rule.
 
+<details>
+<summary>Show Example</summary>
+
+```rust
+use calyx_rs::generation::Grammar;
+
+fn main() {
+    let mut grammar = Grammar::new();
+
+    grammar
+        .start_single(String::from("{greeting.uppercase} there"))
+        .expect("Error defining start rule");
+
+    grammar
+        .single_rule(String::from("greeting"), String::from("hello"))
+        .expect("Error defining greeting rule");
+
+    let text = grammar
+        .generate()
+        .expect("Error during generation")
+        .flatten();
+
+    println!("{}", text);
+    // > HELLO there
+}
+```
+
+</details>
+
+Multiple filters can also be chained onto the same rule, and are evaluated left to right:
+
+<details>
+<summary>Show Example</summary>
+
+```rust
+use calyx_rs::generation::Grammar;
+
+fn main() {
+    let mut grammar = Grammar::new();
+
+    grammar
+        .start_single(String::from("{greeting.uppercase.lowercase} there"))
+        .expect("Error defining start rule");
+
+    grammar
+        .single_rule(String::from("greeting"), String::from("hello"))
+        .expect("Error defining greeting rule");
+
+    let text = grammar
+        .generate()
+        .expect("Error during generation")
+        .flatten();
+
+    println!("{}", text);
+    // > hello there
+}
+```
+
+</details>
+
+The full set of builtin filter functions is defined in [`filter.rs`](./src/generation/filter.rs).
+
 ## Memoized Rules
 
+Rule expansions can be 'memoized' so that multiple references to the same rule return the same value. This is useful for
+picking a noun from a list and reusing it in multiple places within a text.
+
+The `@` sigil is used to mark memoized rules. This evaluates the rule and stores it in memory the first time it's
+referenced. All subsequent references to the memoized rule use the same stored value.
+
+[See Example Here](./examples/ex11_memo.rs)
+
 ## Unique Rules
+
+Rule expansions can be marked as 'unique', meaning that multiple references to the same rule always return a different
+value. This is useful for situations where the same result appearing twice would appear awkward and messy.
+
+Unique rules are marked by the `$` sigil.
+
+[See Example Here](./examples/ex12_unique.rs)
+
+## Dynamically Constructing Rules
+
+Calyx Rust does not currently support this feature.
+
+## External File Formats
+
+Calyx Rust does not currently support this feature.
