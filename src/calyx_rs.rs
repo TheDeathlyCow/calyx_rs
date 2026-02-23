@@ -62,30 +62,34 @@ impl Grammar {
     }
 
     pub fn start_single(&mut self, production: String) -> Result<(), CalyxError> {
-        self.single_rule("start", production)
+        self.single_rule("start".to_string(), production)
     }
 
     pub fn start_uniform(&mut self, production: Vec<String>) -> Result<(), CalyxError> {
-        self.uniform_rule("start", production)
+        self.uniform_rule("start".to_string(), production)
     }
 
-    pub fn single_rule(&mut self, term: &str, production: String) -> Result<(), CalyxError> {
+    pub fn single_rule(&mut self, term: String, production: String) -> Result<(), CalyxError> {
         let branch = vec![production];
         self.registry.define_rule(term, &branch)
     }
 
-    pub fn uniform_rule(&mut self, term: &str, production: Vec<String>) -> Result<(), CalyxError> {
+    pub fn uniform_rule(
+        &mut self,
+        term: String,
+        production: Vec<String>,
+    ) -> Result<(), CalyxError> {
         self.registry.define_rule(term, &production)
     }
 
     pub fn generate(&mut self) -> Result<ExpansionTree, CalyxError> {
-        self.generate_from("start")
+        let start_symbol = "start".to_string();
+        self.generate_from(&start_symbol)
     }
 
-    pub fn generate_from(&mut self, start_symbol: &str) -> Result<ExpansionTree, CalyxError> {
+    pub fn generate_from(&mut self, start_symbol: &String) -> Result<ExpansionTree, CalyxError> {
         let mut eval_context = EvaluationContext::new(self);
-        let start_symbol = start_symbol.to_string();
-        let tree = eval_context.expand_and_evaluate(&start_symbol)?;
+        let tree = eval_context.expand_and_evaluate(start_symbol)?;
 
         Ok(ExpansionTree::chain(ExpansionType::Result, tree))
     }
@@ -120,6 +124,7 @@ mod grammar_tests {
     use crate::calyx_rs::expansion_tree::ExpansionType;
     use crate::calyx_rs::{CalyxError, Grammar};
     use rand::SeedableRng;
+    use rand::rngs::StdRng;
 
     #[test]
     fn evaluate_start_rule() {
@@ -127,7 +132,7 @@ mod grammar_tests {
 
         assert!(
             grammar
-                .uniform_rule("start", vec!["atom".to_string()])
+                .uniform_rule("start".to_string(), vec!["atom".to_string()])
                 .is_ok()
         );
 
@@ -138,7 +143,7 @@ mod grammar_tests {
 
     #[test]
     fn evaluate_recursive_rule() {
-        let rng = rand::rngs::StdRng::seed_from_u64(12345);
+        let rng = StdRng::seed_from_u64(12345);
         let mut grammar = Grammar::from_rng(rng);
 
         assert!(
@@ -150,7 +155,7 @@ mod grammar_tests {
         assert!(
             grammar
                 .uniform_rule(
-                    "num",
+                    "num".to_string(),
                     vec!["one".to_string(), "two".to_string(), "three".to_string()]
                 )
                 .is_ok()
@@ -161,27 +166,6 @@ mod grammar_tests {
             .expect("Error during grammar generation")
             .flatten();
         assert_eq!(text, "one three three");
-    }
-
-    #[test]
-    fn can_filter_memoized_rules() {
-        let mut grammar = Grammar::new();
-
-        assert!(
-            grammar
-                .start_single("{@name.lowercase}".to_string())
-                .is_ok()
-        );
-        assert!(
-            grammar
-                .uniform_rule("name", vec!["Jewels".to_string()])
-                .is_ok()
-        );
-
-        let result = grammar.generate();
-        let text = result.expect("Error during grammar generation").flatten();
-
-        assert_eq!("jewels", text);
     }
 
     #[test]
@@ -197,5 +181,51 @@ mod grammar_tests {
             "Expected UndefinedRule('name'), but got {:?}",
             result
         )
+    }
+
+    #[test]
+    fn memoized_rules_return_identical_expression() {
+        let rng = StdRng::seed_from_u64(12345);
+        let mut grammar = Grammar::from_rng(rng);
+
+        assert!(
+            grammar
+                .start_single("{@name} {@name} {@name} {@name} {@name}".to_string())
+                .is_ok()
+        );
+        assert!(
+            grammar
+                .uniform_rule(
+                    "name".to_string(),
+                    vec!["Jewels".to_string(), "Joey".to_string()]
+                )
+                .is_ok()
+        );
+
+        let result = grammar.generate();
+        let text = result.expect("Error during grammar generation").flatten();
+
+        assert_eq!("Jewels Jewels Jewels Jewels Jewels", text);
+    }
+
+    #[test]
+    fn can_filter_memoized_rules() {
+        let mut grammar = Grammar::new();
+
+        assert!(
+            grammar
+                .start_single("{@name.lowercase}".to_string())
+                .is_ok()
+        );
+        assert!(
+            grammar
+                .uniform_rule("name".to_string(), vec!["Jewels".to_string()])
+                .is_ok()
+        );
+
+        let result = grammar.generate();
+        let text = result.expect("Error during grammar generation").flatten();
+
+        assert_eq!("jewels", text);
     }
 }

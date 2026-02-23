@@ -25,7 +25,7 @@ impl Registry {
 
     pub(crate) fn define_rule(
         &mut self,
-        symbol: &str,
+        symbol: String,
         production: &Vec<String>,
     ) -> Result<(), CalyxError> {
         let symbol = symbol.to_string();
