@@ -63,7 +63,7 @@ fn main() {
 }
 ```
 
-[See Example Here](./examples/ex1_define_rule.rs)
+[Full Example #1](./examples/ex1_define_rule.rs)
 
 Once the grammar is made, call the `generate()` method to retrieve a randomly generated result. This result contains a
 tree representation of the generation output, but it can be converted to text with `flatten()`:
@@ -86,23 +86,23 @@ fn main() {
 }
 ```
 
-[See Example Here](./examples/ex2_generate_simple_rule.rs)
+[Full Example #2](./examples/ex2_generate_simple_rule.rs)
 
 Obviously, this hardcoded sentence isn’t very interesting by itself. Possible variations can be added to the text by
 adding additional rules which provide a named set of text strings. The rule delimiter syntax (`{}`) can be used to
 substitute the generated content of other rules.
 
-[See Example Here](./examples/ex3_uniform_rule_example.rs)
+[See Example #3](./examples/ex3_uniform_rule_example.rs)
 
 Each time `generate()` runs, it evaluates the tree and randomly selects variations of rules to construct a resulting
 string.
 
-[See Example Here](./examples/ex4_uniform_rule_multiple_generation_example.rs)
+[See Example #4](./examples/ex4_uniform_rule_multiple_generation_example.rs)
 
 In the previous example, the different greetings were picked randomly on each generation with a uniform distribution.
 However, we can also supply a custom weighted distribution for the different greetings:
 
-[See Example Here](./examples/ex5_weighted_rule_example.rs)
+[See Example #5](./examples/ex5_weighted_rule_example.rs)
 
 In this case, the grammar will pick "Hello" 50% of the time, "Hi" and "Hey" 20% of the time, and "Yo" 10% of the time
 when greeting is expanded.
@@ -110,13 +110,13 @@ when greeting is expanded.
 By convention, the `start` rule specifies the default starting point for generating the final text. You can start from
 any other named rule by passing it explicitly to the `generate_from()` method.
 
-[See Example Here](./examples/ex6_custom_start_rule_example.rs)
+[See Example #6](./examples/ex6_custom_start_rule_example.rs)
 
 ## Template Expressions
 
 Basic rule substitution uses single curly brackets as delimiters for template expressions:
 
-[See Example Here](./examples/ex7_random_fruit.rs)
+[See Example #7](./examples/ex7_random_fruit.rs)
 
 ## Random Sampling
 
@@ -135,7 +135,7 @@ fn main() {
 }
 ```
 
-[See Example Here](./examples/ex8_seeded_rng.rs)
+[Full Example #8](./examples/ex8_seeded_rng.rs)
 
 The default generator used will be a handle to the local `ThreadRng`.
 
@@ -144,11 +144,11 @@ The default generator used will be a handle to the local `ThreadRng`.
 Dot-notation is supported in template expressions, allowing you to call a variety of different processing functions on
 the string returned from a rule.
 
-[See Example Here](./examples/ex9_filters.rs)
+[See Example #9](./examples/ex9_filters.rs)
 
 Multiple filters can also be chained onto the same rule, and are evaluated left to right:
 
-[See Example Here](./examples/ex10_multiple_filters.rs)
+[See Example #10](./examples/ex10_multiple_filters.rs)
 
 The full set of builtin filter functions is defined in [`filter.rs`](./src/generation/filter.rs).
 
@@ -160,7 +160,7 @@ picking a noun from a list and reusing it in multiple places within a text.
 The `@` sigil is used to mark memoized rules. This evaluates the rule and stores it in memory the first time it's
 referenced. All subsequent references to the memoized rule use the same stored value.
 
-[See Example Here](./examples/ex11_memo.rs)
+[See Example #11](./examples/ex11_memo.rs)
 
 ## Unique Rules
 
@@ -169,7 +169,7 @@ value. This is useful for situations where the same result appearing twice would
 
 Unique rules are marked by the `$` sigil.
 
-[See Example Here](./examples/ex12_unique.rs)
+[See Example #12](./examples/ex12_unique.rs)
 
 ## Dynamically Constructing Rules
 
