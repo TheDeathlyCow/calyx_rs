@@ -48,10 +48,15 @@ impl UniformBranch {
 
 impl Production for UniformBranch {
     fn evaluate(&self, eval_context: &mut EvaluationContext) -> Result<ExpansionTree, CalyxError> {
-        let index = eval_context
-            .options()
-            .random_source
-            .random_range(0..self.choices.len());
+
+        let index = if !self.choices.is_empty() {
+            eval_context
+                .options()
+                .random_source
+                .random_range(0..self.choices.len())
+        } else {
+            0
+        };
 
         self.evaluate_at(index, eval_context)
     }
@@ -140,7 +145,7 @@ impl WeightedBranch {
     pub(crate) fn parse(raw: &HashMap<String, f64>) -> Result<Self, CalyxError> {
         let mut productions: Vec<WeightedProduction> = Vec::new();
 
-        // remove the random ordering of the hashmap. 
+        // remove the random ordering of the hashmap.
         let mut entries: Vec<(&String, &f64)> = raw.iter().collect();
         entries.sort_by(|(name_a, _), (name_b, _)| name_a.cmp(name_b));
 

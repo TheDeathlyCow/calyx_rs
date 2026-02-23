@@ -1,6 +1,6 @@
-use std::collections::HashMap;
 use crate::calyx_rs::evaluation::{EvaluationContext, Registry};
 use crate::calyx_rs::expansion_tree::{ExpansionTree, ExpansionType};
+use std::collections::HashMap;
 
 mod evaluation;
 pub mod expansion_tree;
@@ -238,11 +238,11 @@ impl Options {
 
 #[cfg(test)]
 mod grammar_tests {
-    use std::collections::HashMap;
     use crate::calyx_rs::expansion_tree::ExpansionType;
     use crate::calyx_rs::{CalyxError, Grammar};
     use rand::SeedableRng;
     use rand::rngs::StdRng;
+    use std::collections::HashMap;
 
     #[test]
     fn evaluate_start_rule() {
@@ -250,7 +250,7 @@ mod grammar_tests {
 
         assert!(
             grammar
-                .uniform_rule("start".to_string(), &vec!["atom".to_string()])
+                .uniform_rule(String::from("start"), &vec![String::from("atom")])
                 .is_ok()
         );
 
@@ -260,21 +260,43 @@ mod grammar_tests {
     }
 
     #[test]
+    fn expand_empty_uniform_branch_fails() {
+        let mut grammar = Grammar::new();
+
+        assert!(grammar.start_uniform(&vec![]).is_ok());
+
+        let result = grammar.generate();
+        assert!(matches!(result, Err(CalyxError::ExpandedEmptyBranch)));
+    }
+
+    #[test]
+    fn define_empty_weighted_branch_fails() {
+        let mut grammar = Grammar::new();
+
+        let result = grammar.start_weighted(&HashMap::new());
+        assert!(matches!(result, Err(CalyxError::InvalidWeight { weight }) if weight == 0.0))
+    }
+
+    #[test]
     fn evaluate_recursive_rule() {
         let rng = StdRng::seed_from_u64(12345);
         let mut grammar = Grammar::from_rng(rng);
 
         assert!(
             grammar
-                .start_single("{num} {num} {num}".to_string())
+                .start_single(String::from("{num} {num} {num}"))
                 .is_ok()
         );
 
         assert!(
             grammar
                 .uniform_rule(
-                    "num".to_string(),
-                    &vec!["one".to_string(), "two".to_string(), "three".to_string()]
+                    String::from("num"),
+                    &vec![
+                        String::from("one"),
+                        String::from("two"),
+                        String::from("three")
+                    ]
                 )
                 .is_ok()
         );
@@ -293,7 +315,7 @@ mod grammar_tests {
 
         assert!(
             grammar
-                .start_single("{num} {num} {num} {num} {num} {num}".to_string())
+                .start_single(String::from("{num} {num} {num} {num} {num} {num}"))
                 .is_ok()
         );
 
@@ -324,7 +346,7 @@ mod grammar_tests {
 
         assert!(
             grammar
-                .start_single("{num} {num} {num} {num} {num} {num}".to_string())
+                .start_single(String::from("{num} {num} {num} {num} {num} {num}"))
                 .is_ok()
         );
 
@@ -349,7 +371,7 @@ mod grammar_tests {
 
         assert!(
             grammar
-                .start_single("{num} {num} {num} {num} {num} {num}".to_string())
+                .start_single(String::from("{num} {num} {num} {num} {num} {num}"))
                 .is_ok()
         );
 
@@ -371,7 +393,7 @@ mod grammar_tests {
     fn strict_options_return_unknown_rule_error() {
         let mut grammar = Grammar::new_strict();
 
-        assert!(grammar.start_single("{name}".to_string()).is_ok());
+        assert!(grammar.start_single(String::from("{name}")).is_ok());
 
         let result = grammar.generate();
 
@@ -389,14 +411,14 @@ mod grammar_tests {
 
         assert!(
             grammar
-                .start_single("{@name} {@name} {@name} {@name} {@name}".to_string())
+                .start_single(String::from("{@name} {@name} {@name} {@name} {@name}"))
                 .is_ok()
         );
         assert!(
             grammar
                 .uniform_rule(
-                    "name".to_string(),
-                    &vec!["Jewels".to_string(), "Joey".to_string()]
+                    String::from("name"),
+                    &vec![String::from("Jewels"), String::from("Joey")]
                 )
                 .is_ok()
         );
@@ -413,12 +435,12 @@ mod grammar_tests {
 
         assert!(
             grammar
-                .start_single("{@name.lowercase}".to_string())
+                .start_single(String::from("{@name.lowercase}"))
                 .is_ok()
         );
         assert!(
             grammar
-                .uniform_rule("name".to_string(), &vec!["Jewels".to_string()])
+                .uniform_rule(String::from("name"), &vec![String::from("Jewels")])
                 .is_ok()
         );
 
