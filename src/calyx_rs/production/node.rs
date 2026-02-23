@@ -9,8 +9,13 @@ struct AtomNode {
 
 impl Production for AtomNode {
     fn evaluate(&self, _eval_context: &mut EvaluationContext) -> Result<ExpansionTree, CalyxError> {
-        Ok(ExpansionTree::new_atom(&self.atom))
+        Ok(ExpansionTree::new_atom(self.atom.clone()))
     }
+}
+
+#[cfg(test)]
+mod atom_tests {
+    
 }
 
 struct ExpressionNode {
@@ -46,7 +51,7 @@ impl Production for ExpressionChain {
 
         Ok(ExpansionTree::chain(
             ExpansionType::ExpressionChain,
-            ExpansionTree::new_atom(initial_string.as_str()),
+            ExpansionTree::new_atom(initial_string),
         ))
     }
 }

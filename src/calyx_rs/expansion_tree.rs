@@ -41,7 +41,7 @@ impl ExpansionTree {
         }
     }
 
-    pub fn new_atom(term: &str) -> Self {
+    pub fn new_atom(term: String) -> Self {
         ExpansionTree {
             children: vec![],
             symbol: ExpansionType::Atom(term.to_string()),
@@ -62,5 +62,24 @@ impl ExpansionTree {
                 exp.collect_atoms(concat);
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod expansion_tree_tests {
+    use crate::calyx_rs::expansion_tree::{ExpansionTree, ExpansionType};
+
+    #[test]
+    fn flatten_expansion_tree_to_atoms() {
+        let tail = vec![
+            ExpansionTree::new_atom(String::from("-ONE-")),
+            ExpansionTree::new_atom(String::from("-TWO-")),
+            ExpansionTree::new_atom(String::from("-THREE-")),
+        ];
+
+        let exp = ExpansionTree::new(ExpansionType::Template, tail);
+
+        let text = exp.flatten();
+        assert_eq!(text, "-ONE--TWO--THREE-");
     }
 }

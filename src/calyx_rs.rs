@@ -61,19 +61,43 @@ impl Grammar {
         }
     }
 
+    /// Defines a new single expansion of the `start` rule.
+    ///
+    /// # Errors
+    /// - [CalyxError::DuplicateRule] if the start rule is already defined.
+    /// - [CalyxError::InvalidExpression] if the production could not be parsed.
+    ///
     pub fn start_single(&mut self, production: String) -> Result<(), CalyxError> {
-        self.single_rule("start".to_string(), production)
+        self.single_rule(String::from("start"), production)
     }
 
+    /// Defines a new uniform expansion of the `start` rule.
+    ///
+    /// # Errors
+    /// - [CalyxError::DuplicateRule] if the start rule is already defined.
+    /// - [CalyxError::InvalidExpression] if the production could not be parsed.
+    ///
     pub fn start_uniform(&mut self, production: Vec<String>) -> Result<(), CalyxError> {
-        self.uniform_rule("start".to_string(), production)
+        self.uniform_rule(String::from("start"), production)
     }
 
+    /// Defines a new single expansion of the given term.
+    ///
+    /// # Errors
+    /// - [CalyxError::DuplicateRule] if the term is already defined.
+    /// - [CalyxError::InvalidExpression] if the production could not be parsed.
+    ///
     pub fn single_rule(&mut self, term: String, production: String) -> Result<(), CalyxError> {
         let branch = vec![production];
         self.registry.define_rule(term, &branch)
     }
 
+    /// Defines a new uniform expansion of the given term.
+    ///
+    /// # Errors
+    /// - [CalyxError::DuplicateRule] if the term is already defined.
+    /// - [CalyxError::InvalidExpression] if the production could not be parsed.
+    ///
     pub fn uniform_rule(
         &mut self,
         term: String,
@@ -82,11 +106,68 @@ impl Grammar {
         self.registry.define_rule(term, &production)
     }
 
+    /// Generate an expansion of this grammar, starting from the rule named `start`.
+    ///
+    /// # Errors
+    ///
+    /// - [CalyxError::UndefinedRule] if attempting to expand a rule that is not defined, and the
+    /// grammar options are [Options::strict].
+    /// - [CalyxError::UndefinedFilter] if attempting to apply a filter to an expansion that does
+    /// not exist.
+    /// - [CalyxError::ExpandedEmptyBranch] if attempting to expand a branch production and that
+    /// production has no children.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use calyx_rs::calyx_rs::expansion_tree::ExpansionTree;
+    /// use calyx_rs::calyx_rs::{CalyxError, Grammar};
+    ///
+    /// let mut grammar: Grammar = Grammar::new();
+    /// assert!(grammar.start_single(String::from("{odd_number} {even_number}")).is_ok());
+    /// assert!(grammar.single_rule(String::from("odd_number"), String::from("1")).is_ok());
+    /// assert!(grammar.single_rule(String::from("even_number"), String::from("2")).is_ok());
+    ///
+    /// let result: Result<ExpansionTree, CalyxError> = grammar.generate();
+    ///
+    /// let expansion: ExpansionTree = result.expect("Error during generation");
+    /// let text: String = expansion.flatten();
+    /// assert_eq!(text, "1 2");
+    /// ```
+    ///
     pub fn generate(&mut self) -> Result<ExpansionTree, CalyxError> {
-        let start_symbol = "start".to_string();
-        self.generate_from(&start_symbol)
+        self.generate_from(&String::from("start"))
     }
 
+    /// Generate an expansion of this grammar, starting from a given start symbol.
+    ///
+    /// # Errors
+    ///
+    /// - [CalyxError::UndefinedRule] if attempting to expand a rule that is not defined, and the
+    /// grammar options are [Options::strict].
+    /// - [CalyxError::UndefinedFilter] if attempting to apply a filter to an expansion that does
+    /// not exist.
+    /// - [CalyxError::ExpandedEmptyBranch] if attempting to expand a branch production and that
+    /// production has no children.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use calyx_rs::calyx_rs::expansion_tree::ExpansionTree;
+    /// use calyx_rs::calyx_rs::{CalyxError, Grammar};
+    ///
+    /// let mut grammar: Grammar = Grammar::new();
+    /// assert!(grammar.start_single(String::from("{odd_number} {even_number}")).is_ok());
+    /// assert!(grammar.single_rule(String::from("odd_number"), String::from("1")).is_ok());
+    /// assert!(grammar.single_rule(String::from("even_number"), String::from("2")).is_ok());
+    ///
+    /// let result: Result<ExpansionTree, CalyxError> = grammar.generate_from(&String::from("odd_number"));
+    ///
+    /// let expansion: ExpansionTree = result.expect("Error during generation");
+    /// let text: String = expansion.flatten();
+    /// assert_eq!(text, "1");
+    /// ```
+    ///
     pub fn generate_from(&mut self, start_symbol: &String) -> Result<ExpansionTree, CalyxError> {
         let mut eval_context = EvaluationContext::new(self);
         let tree = eval_context.expand_and_evaluate(start_symbol)?;
@@ -96,6 +177,7 @@ impl Grammar {
 }
 
 impl Options {
+    /// Creates a new options struct with a defined [Self::strict] mode and random source.
     pub fn new<R: rand::RngCore + 'static>(strict: bool, random_source: R) -> Options {
         Options {
             strict,
@@ -103,6 +185,7 @@ impl Options {
         }
     }
 
+    /// Creates a new [Self::lenient] options struct,
     pub fn new_lenient<R: rand::RngCore + 'static>(random_source: R) -> Options {
         Options {
             strict: false,
@@ -110,10 +193,16 @@ impl Options {
         }
     }
 
+    /// Strict mode requires all rules to be defined in a grammar to successfully evaluate it.
+    ///
+    /// Strict is the opposite of [Self::lenient].
     pub fn strict(&self) -> bool {
         self.strict
     }
 
+    /// In lenient mode, undefined rules in a grammar will evaluate to an empty string.
+    ///
+    /// Lenient is the opposite of [Self::strict]
     pub fn lenient(&self) -> bool {
         !self.strict()
     }

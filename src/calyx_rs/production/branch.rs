@@ -1,8 +1,8 @@
+use crate::calyx_rs::CalyxError;
 use crate::calyx_rs::evaluation::EvaluationContext;
 use crate::calyx_rs::expansion_tree::{ExpansionTree, ExpansionType};
 use crate::calyx_rs::production::node::TemplateNode;
 use crate::calyx_rs::production::{Production, ProductionBranch};
-use crate::calyx_rs::CalyxError;
 use rand::Rng;
 
 pub(crate) struct EmptyBranch {}
@@ -19,7 +19,7 @@ impl ProductionBranch for EmptyBranch {
         _index: usize,
         _eval_context: &mut EvaluationContext,
     ) -> Result<ExpansionTree, CalyxError> {
-        let exp = ExpansionTree::new_atom("");
+        let exp = ExpansionTree::new_atom(String::new());
         Ok(ExpansionTree::chain(ExpansionType::EmptyBranch, exp))
     }
 
