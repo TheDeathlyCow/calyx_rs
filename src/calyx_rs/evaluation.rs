@@ -28,8 +28,6 @@ impl Registry {
         symbol: String,
         production: &Vec<String>,
     ) -> Result<(), CalyxError> {
-        let symbol = symbol.to_string();
-
         if self.rules.contains_key(&symbol) {
             return Err(CalyxError::DuplicateRule { rule_name: symbol });
         }

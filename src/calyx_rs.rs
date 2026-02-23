@@ -12,7 +12,7 @@ pub struct Options {
     random_source: Box<dyn rand::RngCore>,
 }
 
-/// Core struct for Calyx grammars
+/// Core struct for Calyx grammars. See the README for more guidance on the format of productions.
 pub struct Grammar {
     registry: Registry,
     options: Options,
@@ -54,7 +54,7 @@ impl Grammar {
     }
 
     /// Creates a new grammar with the given options.
-    pub fn with_options(options: Options) -> Grammar {
+    pub fn from_options(options: Options) -> Grammar {
         Grammar {
             registry: Registry::new(),
             options,
@@ -77,8 +77,8 @@ impl Grammar {
     /// - [CalyxError::DuplicateRule] if the start rule is already defined.
     /// - [CalyxError::InvalidExpression] if the production could not be parsed.
     ///
-    pub fn start_uniform(&mut self, production: Vec<String>) -> Result<(), CalyxError> {
-        self.uniform_rule(String::from("start"), production)
+    pub fn start_uniform(&mut self, production: &Vec<String>) -> Result<(), CalyxError> {
+        self.uniform_rule(String::from("start"), &production)
     }
 
     /// Defines a new single expansion of the given term.
@@ -101,7 +101,7 @@ impl Grammar {
     pub fn uniform_rule(
         &mut self,
         term: String,
-        production: Vec<String>,
+        production: &Vec<String>,
     ) -> Result<(), CalyxError> {
         self.registry.define_rule(term, &production)
     }
@@ -221,7 +221,7 @@ mod grammar_tests {
 
         assert!(
             grammar
-                .uniform_rule("start".to_string(), vec!["atom".to_string()])
+                .uniform_rule("start".to_string(), &vec!["atom".to_string()])
                 .is_ok()
         );
 
@@ -245,7 +245,7 @@ mod grammar_tests {
             grammar
                 .uniform_rule(
                     "num".to_string(),
-                    vec!["one".to_string(), "two".to_string(), "three".to_string()]
+                    &vec!["one".to_string(), "two".to_string(), "three".to_string()]
                 )
                 .is_ok()
         );
@@ -286,7 +286,7 @@ mod grammar_tests {
             grammar
                 .uniform_rule(
                     "name".to_string(),
-                    vec!["Jewels".to_string(), "Joey".to_string()]
+                    &vec!["Jewels".to_string(), "Joey".to_string()]
                 )
                 .is_ok()
         );
@@ -308,7 +308,7 @@ mod grammar_tests {
         );
         assert!(
             grammar
-                .uniform_rule("name".to_string(), vec!["Jewels".to_string()])
+                .uniform_rule("name".to_string(), &vec!["Jewels".to_string()])
                 .is_ok()
         );
 

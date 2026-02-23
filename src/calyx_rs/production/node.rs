@@ -1,7 +1,7 @@
+use crate::calyx_rs::CalyxError;
 use crate::calyx_rs::evaluation::EvaluationContext;
 use crate::calyx_rs::expansion_tree::{ExpansionTree, ExpansionType};
 use crate::calyx_rs::production::Production;
-use crate::calyx_rs::CalyxError;
 
 struct AtomNode {
     atom: String,
@@ -11,11 +11,6 @@ impl Production for AtomNode {
     fn evaluate(&self, _eval_context: &mut EvaluationContext) -> Result<ExpansionTree, CalyxError> {
         Ok(ExpansionTree::new_atom(self.atom.clone()))
     }
-}
-
-#[cfg(test)]
-mod atom_tests {
-    
 }
 
 struct ExpressionNode {
@@ -77,6 +72,43 @@ impl Production for UniqueNode {
         let tree = eval_context.unique_expansion(&self.symbol)?;
 
         Ok(ExpansionTree::chain(ExpansionType::Unique, tree))
+    }
+}
+
+#[cfg(test)]
+mod unique_tests {
+    use crate::calyx_rs::{Grammar, Options};
+    use rand::SeedableRng;
+    use rand::prelude::StdRng;
+
+    #[test]
+    fn unique_node_cycles_through_each_template_in_branch() {
+        let rng = StdRng::seed_from_u64(12345);
+        let mut grammar = Grammar::from_options(Options::new(true, rng));
+
+        assert!(
+            grammar
+                .start_single(String::from("{$medal} {$medal} {$medal}"))
+                .is_ok()
+        );
+
+        assert!(
+            grammar
+                .uniform_rule(
+                    String::from("medal"),
+                    &vec![
+                        String::from("gold"),
+                        String::from("silver"),
+                        String::from("bronze"),
+                    ],
+                )
+                .is_ok()
+        );
+
+        let result = grammar.generate().expect("Error during generation");
+        let text = result.flatten();
+
+        assert_eq!("bronze silver gold", text);
     }
 }
 
@@ -212,7 +244,7 @@ impl TemplateNode {
 }
 
 #[cfg(test)]
-mod tests {
+mod template_tests {
     use crate::calyx_rs::production::node::TemplateNode;
 
     #[test]
