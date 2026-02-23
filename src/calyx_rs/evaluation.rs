@@ -1,5 +1,5 @@
 use crate::calyx_rs::expansion_tree::ExpansionTree;
-use crate::calyx_rs::filter::Filter;
+use crate::calyx_rs::filter::{create_builtin_filters, Filter};
 use crate::calyx_rs::production::branch::EmptyBranch;
 use crate::calyx_rs::production::branch::UniformBranch;
 use crate::calyx_rs::production::ProductionBranch;
@@ -9,7 +9,7 @@ use std::collections::HashMap;
 
 pub(crate) struct Registry {
     rules: HashMap<String, Box<dyn ProductionBranch>>,
-    filters: HashMap<String, Box<dyn Filter>>,
+    filters: HashMap<String, Filter>,
     // this will always be an empty branch but is stored in the struct so that the lifetime matches
     empty_rule: EmptyBranch,
 }
@@ -18,7 +18,7 @@ impl Registry {
     pub(crate) fn new() -> Self {
         Self {
             rules: HashMap::new(),
-            filters: HashMap::new(),
+            filters: create_builtin_filters(),
             empty_rule: EmptyBranch {},
         }
     }
@@ -61,8 +61,8 @@ impl Registry {
         }
     }
 
-    pub(crate) fn get_filter(&self, filter_name: &String) -> Option<&dyn Filter> {
-        self.filters.get(filter_name).map(|v| v.as_ref())
+    pub(crate) fn get_filter(&self, filter_name: &String) -> Option<&Filter> {
+        self.filters.get(filter_name)
     }
 }
 

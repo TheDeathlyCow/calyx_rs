@@ -1,23 +1,27 @@
 use crate::calyx_rs::evaluation::{EvaluationContext, Registry};
 use crate::calyx_rs::expansion_tree::{ExpansionTree, ExpansionType};
-use rand::rngs::StdRng;
 use rand::SeedableRng;
+use rand::prelude::ThreadRng;
+use rand::rngs::StdRng;
 
 mod evaluation;
 pub mod expansion_tree;
 pub mod filter;
 mod production;
 
+/// Contains options for grammar generation.
 pub struct Options {
     strict: bool,
     random_source: Box<dyn rand::RngCore>,
 }
 
+/// Core struct for Calyx grammars
 pub struct Grammar {
     registry: Registry,
     options: Options,
 }
 
+/// Defines the possible set of errors that may occur during grammar generation.
 #[derive(Debug)]
 pub enum CalyxError {
     UndefinedRule { rule_name: String },
@@ -28,6 +32,7 @@ pub enum CalyxError {
 }
 
 impl Grammar {
+    /// Creates a new lenient grammar with a local [`ThreadRng`].
     pub fn new() -> Grammar {
         Grammar {
             registry: Registry::new(),
@@ -35,17 +40,20 @@ impl Grammar {
         }
     }
 
-    pub fn from_seed(seed: <StdRng as SeedableRng>::Seed) -> Grammar {
-        let rng: StdRng = SeedableRng::from_seed(seed);
-
+    /// Creates a new lenient grammar with a specified random source.
+    pub fn from_rng<R: rand::RngCore + 'static>(random_source: R) -> Grammar {
         Grammar {
             registry: Registry::new(),
-            options: Options::new(false, rng)
+            options: Options::new(false, random_source),
         }
     }
 
+    /// Creates a new grammar with the given options.
     pub fn with_options(options: Options) -> Grammar {
-        Grammar { registry: Registry::new(), options }
+        Grammar {
+            registry: Registry::new(),
+            options,
+        }
     }
 
     pub fn start_single(&mut self, production: String) -> Result<(), CalyxError> {
@@ -96,6 +104,10 @@ impl Options {
     pub fn strict(&self) -> bool {
         self.strict
     }
+
+    pub fn lenient(&self) -> bool {
+        !self.strict()
+    }
 }
 
 #[cfg(test)]
@@ -106,12 +118,30 @@ mod grammar_tests {
     fn it_works() {
         let mut grammar = Grammar::new();
 
-        assert!(grammar.start_single("{num} {num} {num}".to_string()).is_ok());
+        assert!(
+            grammar
+                .start_single("{num} {num} {num}".to_string())
+                .is_ok()
+        );
 
         let prod: Vec<String> = vec!["one".to_string(), "two".to_string(), "three".to_string()];
         assert!(grammar.uniform_rule("num", prod).is_ok());
 
         let result = grammar.generate().unwrap().flatten();
         println!("{result}")
+    }
+
+    #[test]
+    fn can_filter_memoized_rules() {
+        let mut grammar = Grammar::new();
+
+        assert!(grammar.start_single("{@name.lowercase}".to_string()).is_ok());
+        assert!(grammar.uniform_rule("name", vec!["Jewels".to_string()]).is_ok());
+
+        let result = grammar.generate();
+
+        let text = result.expect("Error during grammar generation").flatten();
+
+        assert_eq!("jewels", text);
     }
 }
