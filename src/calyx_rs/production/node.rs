@@ -1,15 +1,14 @@
-use crate::calyx_rs::CalyxError;
 use crate::calyx_rs::evaluation::EvaluationContext;
 use crate::calyx_rs::expansion_tree::{ExpansionTree, ExpansionType};
 use crate::calyx_rs::production::Production;
-use std::str::CharIndices;
+use crate::calyx_rs::CalyxError;
 
 struct AtomNode {
     atom: String,
 }
 
 impl Production for AtomNode {
-    fn evaluate(&self, eval_context: &mut EvaluationContext) -> Result<ExpansionTree, CalyxError> {
+    fn evaluate(&self, _eval_context: &mut EvaluationContext) -> Result<ExpansionTree, CalyxError> {
         Ok(ExpansionTree::new_atom(&self.atom))
     }
 }

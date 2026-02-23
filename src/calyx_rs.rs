@@ -1,5 +1,7 @@
 use crate::calyx_rs::evaluation::{EvaluationContext, Registry};
 use crate::calyx_rs::expansion_tree::{ExpansionTree, ExpansionType};
+use rand::rngs::StdRng;
+use rand::SeedableRng;
 
 mod evaluation;
 pub mod expansion_tree;
@@ -26,9 +28,24 @@ pub enum CalyxError {
 }
 
 impl Grammar {
-    pub fn new(options: Options) -> Grammar {
-        let registry = Registry::new();
-        Grammar { registry, options }
+    pub fn new() -> Grammar {
+        Grammar {
+            registry: Registry::new(),
+            options: Options::new(false, rand::rng()),
+        }
+    }
+
+    pub fn from_seed(seed: <StdRng as SeedableRng>::Seed) -> Grammar {
+        let rng: StdRng = SeedableRng::from_seed(seed);
+
+        Grammar {
+            registry: Registry::new(),
+            options: Options::new(false, rng)
+        }
+    }
+
+    pub fn with_options(options: Options) -> Grammar {
+        Grammar { registry: Registry::new(), options }
     }
 
     pub fn start_single(&mut self, production: String) -> Result<(), CalyxError> {
@@ -78,5 +95,23 @@ impl Options {
 
     pub fn strict(&self) -> bool {
         self.strict
+    }
+}
+
+#[cfg(test)]
+mod grammar_tests {
+    use crate::calyx_rs::Grammar;
+
+    #[test]
+    fn it_works() {
+        let mut grammar = Grammar::new();
+
+        assert!(grammar.start_single("{num} {num} {num}".to_string()).is_ok());
+
+        let prod: Vec<String> = vec!["one".to_string(), "two".to_string(), "three".to_string()];
+        assert!(grammar.uniform_rule("num", prod).is_ok());
+
+        let result = grammar.generate().unwrap().flatten();
+        println!("{result}")
     }
 }

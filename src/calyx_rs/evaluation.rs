@@ -1,8 +1,8 @@
 use crate::calyx_rs::expansion_tree::ExpansionTree;
 use crate::calyx_rs::filter::Filter;
-use crate::calyx_rs::production::ProductionBranch;
 use crate::calyx_rs::production::branch::EmptyBranch;
 use crate::calyx_rs::production::branch::UniformBranch;
+use crate::calyx_rs::production::ProductionBranch;
 use crate::calyx_rs::{CalyxError, Grammar, Options};
 use rand::seq::SliceRandom;
 use std::collections::HashMap;
@@ -179,7 +179,7 @@ impl UniqueCycle {
     fn poll(&mut self, options: &mut Options) -> usize {
         self.index += 1;
 
-        if (self.index >= self.count) {
+        if self.index >= self.count {
             self.shuffle(options);
             self.index = 0;
         }

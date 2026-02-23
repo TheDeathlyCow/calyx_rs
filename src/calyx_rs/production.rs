@@ -1,9 +1,9 @@
 pub(super) mod branch;
 mod node;
 
-use crate::calyx_rs::CalyxError;
-use crate::calyx_rs::expansion_tree::ExpansionTree;
 use crate::calyx_rs::evaluation::EvaluationContext;
+use crate::calyx_rs::expansion_tree::ExpansionTree;
+use crate::calyx_rs::CalyxError;
 
 pub trait Production {
     fn evaluate(&self, eval_context: &mut EvaluationContext) -> Result<ExpansionTree, CalyxError>;
