@@ -10,7 +10,7 @@ mod production;
 /// Contains options for grammar generation.
 pub struct Options {
     strict: bool,
-    random_source: Box<dyn rand::RngCore>,
+    random_source: Box<dyn rand::Rng>,
 }
 
 /// Core struct for Calyx grammars. See the README for more guidance on the format of productions.
@@ -48,7 +48,7 @@ impl Grammar {
     }
 
     /// Creates a new lenient grammar with a specified random source.
-    pub fn from_rng<R: rand::RngCore + 'static>(random_source: R) -> Grammar {
+    pub fn from_rng<R: rand::Rng + 'static>(random_source: R) -> Grammar {
         Grammar {
             registry: Registry::new(),
             options: Options::new(false, random_source),
@@ -206,7 +206,7 @@ impl Grammar {
 
 impl Options {
     /// Creates a new options struct with a defined [Self::strict] mode and random source.
-    pub fn new<R: rand::RngCore + 'static>(strict: bool, random_source: R) -> Options {
+    pub fn new<R: rand::Rng + 'static>(strict: bool, random_source: R) -> Options {
         Options {
             strict,
             random_source: Box::new(random_source),
@@ -214,7 +214,7 @@ impl Options {
     }
 
     /// Creates a new [Self::lenient] options struct,
-    pub fn new_lenient<R: rand::RngCore + 'static>(random_source: R) -> Options {
+    pub fn new_lenient<R: rand::Rng + 'static>(random_source: R) -> Options {
         Options {
             strict: false,
             random_source: Box::new(random_source),

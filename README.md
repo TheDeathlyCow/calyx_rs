@@ -120,7 +120,7 @@ Basic rule substitution uses single curly brackets as delimiters for template ex
 
 ## Random Sampling
 
-Calyx allows for you to use any type that implements the `rand::RngCore` trait from
+Calyx allows for you to use any type that implements the `rand::Rng` trait from
 the [rand](https://docs.rs/rand/latest/rand/) library. A seeded grammar can be constructed using a custom set of
 `Options`.
 

@@ -3,8 +3,8 @@ use crate::generation::evaluation::EvaluationContext;
 use crate::generation::expansion_tree::{ExpansionTree, ExpansionType};
 use crate::generation::production::node::TemplateNode;
 use crate::generation::production::{Production, ProductionBranch};
-use rand::Rng;
 use std::collections::HashMap;
+use rand::RngExt;
 
 pub(crate) struct EmptyBranch {}
 
