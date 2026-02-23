@@ -1,4 +1,5 @@
 #[derive(Clone)]
+#[derive(Debug)]
 pub enum ExpansionType {
     Atom(String),
     Result,
@@ -14,6 +15,7 @@ pub enum ExpansionType {
 }
 
 #[derive(Clone)]
+#[derive(Debug)]
 pub struct ExpansionTree {
     children: Vec<ExpansionTree>,
     symbol: ExpansionType,
@@ -24,8 +26,8 @@ impl ExpansionTree {
         &self.children
     }
 
-    pub fn symbol(&self) -> &ExpansionType {
-        &self.symbol
+    pub fn symbol(&self) -> ExpansionType {
+        self.symbol.clone()
     }
 
     pub fn new(symbol: ExpansionType, tail: Vec<ExpansionTree>) -> Self {

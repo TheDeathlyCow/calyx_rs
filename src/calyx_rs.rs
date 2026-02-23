@@ -1,8 +1,5 @@
 use crate::calyx_rs::evaluation::{EvaluationContext, Registry};
 use crate::calyx_rs::expansion_tree::{ExpansionTree, ExpansionType};
-use rand::SeedableRng;
-use rand::prelude::ThreadRng;
-use rand::rngs::StdRng;
 
 mod evaluation;
 pub mod expansion_tree;
@@ -37,6 +34,14 @@ impl Grammar {
         Grammar {
             registry: Registry::new(),
             options: Options::new(false, rand::rng()),
+        }
+    }
+
+    /// Creates a new strict grammar with a local [`ThreadRng`].
+    pub fn new_strict() -> Grammar {
+        Grammar {
+            registry: Registry::new(),
+            options: Options::new(true, rand::rng()),
         }
     }
 
@@ -112,11 +117,29 @@ impl Options {
 
 #[cfg(test)]
 mod grammar_tests {
-    use crate::calyx_rs::Grammar;
+    use crate::calyx_rs::expansion_tree::ExpansionType;
+    use crate::calyx_rs::{CalyxError, Grammar};
+    use rand::SeedableRng;
 
     #[test]
-    fn it_works() {
+    fn evaluate_start_rule() {
         let mut grammar = Grammar::new();
+
+        assert!(
+            grammar
+                .uniform_rule("start", vec!["atom".to_string()])
+                .is_ok()
+        );
+
+        let expansion = grammar.generate().expect("Error during grammar generation");
+        assert!(matches!(expansion.symbol(), ExpansionType::Result));
+        assert_eq!(expansion.flatten(), "atom");
+    }
+
+    #[test]
+    fn evaluate_recursive_rule() {
+        let rng = rand::rngs::StdRng::seed_from_u64(12345);
+        let mut grammar = Grammar::from_rng(rng);
 
         assert!(
             grammar
@@ -124,24 +147,55 @@ mod grammar_tests {
                 .is_ok()
         );
 
-        let prod: Vec<String> = vec!["one".to_string(), "two".to_string(), "three".to_string()];
-        assert!(grammar.uniform_rule("num", prod).is_ok());
+        assert!(
+            grammar
+                .uniform_rule(
+                    "num",
+                    vec!["one".to_string(), "two".to_string(), "three".to_string()]
+                )
+                .is_ok()
+        );
 
-        let result = grammar.generate().unwrap().flatten();
-        println!("{result}")
+        let text = grammar
+            .generate()
+            .expect("Error during grammar generation")
+            .flatten();
+        assert_eq!(text, "one three three");
     }
 
     #[test]
     fn can_filter_memoized_rules() {
         let mut grammar = Grammar::new();
 
-        assert!(grammar.start_single("{@name.lowercase}".to_string()).is_ok());
-        assert!(grammar.uniform_rule("name", vec!["Jewels".to_string()]).is_ok());
+        assert!(
+            grammar
+                .start_single("{@name.lowercase}".to_string())
+                .is_ok()
+        );
+        assert!(
+            grammar
+                .uniform_rule("name", vec!["Jewels".to_string()])
+                .is_ok()
+        );
 
         let result = grammar.generate();
-
         let text = result.expect("Error during grammar generation").flatten();
 
         assert_eq!("jewels", text);
+    }
+
+    #[test]
+    fn strict_options_return_unknown_rule_error() {
+        let mut grammar = Grammar::new_strict();
+
+        assert!(grammar.start_single("{name}".to_string()).is_ok());
+
+        let result = grammar.generate();
+
+        assert!(
+            matches!(result, Err(CalyxError::UndefinedRule {ref rule_name}) if rule_name == "name"),
+            "Expected UndefinedRule('name'), but got {:?}",
+            result
+        )
     }
 }
