@@ -1,1 +1,1 @@
-pub mod calyx_rs;
+pub mod generation;

@@ -1,9 +1,9 @@
-use crate::calyx_rs::expansion_tree::ExpansionTree;
-use crate::calyx_rs::filter::{Filter, create_builtin_filters};
-use crate::calyx_rs::production::ProductionBranch;
-use crate::calyx_rs::production::branch::{EmptyBranch, WeightedBranch};
-use crate::calyx_rs::production::branch::UniformBranch;
-use crate::calyx_rs::{CalyxError, Grammar, Options};
+use crate::generation::expansion_tree::ExpansionTree;
+use crate::generation::filter::{Filter, create_builtin_filters};
+use crate::generation::production::ProductionBranch;
+use crate::generation::production::branch::{EmptyBranch, WeightedBranch};
+use crate::generation::production::branch::UniformBranch;
+use crate::generation::{CalyxError, Grammar, Options};
 use rand::seq::SliceRandom;
 use std::collections::HashMap;
 
@@ -212,8 +212,8 @@ impl UniqueCycle {
 mod cycle_tests {
     use rand::prelude::StdRng;
     use rand::SeedableRng;
-    use crate::calyx_rs::Options;
-    use crate::calyx_rs::evaluation::UniqueCycle;
+    use crate::generation::Options;
+    use crate::generation::evaluation::UniqueCycle;
 
     #[test]
     fn empty_cycle_always_returns_0() {

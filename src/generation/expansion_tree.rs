@@ -67,7 +67,7 @@ impl ExpansionTree {
 
 #[cfg(test)]
 mod expansion_tree_tests {
-    use crate::calyx_rs::expansion_tree::{ExpansionTree, ExpansionType};
+    use crate::generation::expansion_tree::{ExpansionTree, ExpansionType};
 
     #[test]
     fn flatten_expansion_tree_to_atoms() {

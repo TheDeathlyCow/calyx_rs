@@ -1,5 +1,5 @@
-use crate::calyx_rs::evaluation::{EvaluationContext, Registry};
-use crate::calyx_rs::expansion_tree::{ExpansionTree, ExpansionType};
+use crate::generation::evaluation::{EvaluationContext, Registry};
+use crate::generation::expansion_tree::{ExpansionTree, ExpansionType};
 use std::collections::HashMap;
 
 mod evaluation;
@@ -148,8 +148,8 @@ impl Grammar {
     /// # Examples
     ///
     /// ```
-    /// use calyx_rs::calyx_rs::expansion_tree::ExpansionTree;
-    /// use calyx_rs::calyx_rs::{CalyxError, Grammar};
+    /// use calyx_rs::calyx::expansion_tree::ExpansionTree;
+    /// use calyx_rs::calyx::{CalyxError, Grammar};
     ///
     /// let mut grammar: Grammar = Grammar::new();
     /// assert!(grammar.start_single(String::from("{odd_number} {even_number}")).is_ok());
@@ -181,8 +181,8 @@ impl Grammar {
     /// # Examples
     ///
     /// ```
-    /// use calyx_rs::calyx_rs::expansion_tree::ExpansionTree;
-    /// use calyx_rs::calyx_rs::{CalyxError, Grammar};
+    /// use calyx_rs::generation::expansion_tree::ExpansionTree;
+    /// use calyx_rs::generation::{CalyxError, Grammar};
     ///
     /// let mut grammar: Grammar = Grammar::new();
     /// assert!(grammar.start_single(String::from("{odd_number} {even_number}")).is_ok());
@@ -238,8 +238,8 @@ impl Options {
 
 #[cfg(test)]
 mod grammar_tests {
-    use crate::calyx_rs::expansion_tree::ExpansionType;
-    use crate::calyx_rs::{CalyxError, Grammar};
+    use crate::generation::expansion_tree::ExpansionType;
+    use crate::generation::{CalyxError, Grammar};
     use rand::SeedableRng;
     use rand::rngs::StdRng;
     use std::collections::HashMap;

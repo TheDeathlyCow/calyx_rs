@@ -1,7 +1,7 @@
-use crate::calyx_rs::CalyxError;
-use crate::calyx_rs::evaluation::EvaluationContext;
-use crate::calyx_rs::expansion_tree::{ExpansionTree, ExpansionType};
-use crate::calyx_rs::production::Production;
+use crate::generation::CalyxError;
+use crate::generation::evaluation::EvaluationContext;
+use crate::generation::expansion_tree::{ExpansionTree, ExpansionType};
+use crate::generation::production::Production;
 
 struct AtomNode {
     atom: String,
@@ -77,7 +77,7 @@ impl Production for UniqueNode {
 
 #[cfg(test)]
 mod unique_tests {
-    use crate::calyx_rs::{Grammar, Options};
+    use crate::generation::{Grammar, Options};
     use rand::SeedableRng;
     use rand::prelude::StdRng;
 
@@ -245,7 +245,7 @@ impl TemplateNode {
 
 #[cfg(test)]
 mod template_tests {
-    use crate::calyx_rs::production::node::TemplateNode;
+    use crate::generation::production::node::TemplateNode;
 
     #[test]
     fn frag_with_no_delimiters() {

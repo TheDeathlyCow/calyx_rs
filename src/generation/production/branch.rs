@@ -1,8 +1,8 @@
-use crate::calyx_rs::CalyxError;
-use crate::calyx_rs::evaluation::EvaluationContext;
-use crate::calyx_rs::expansion_tree::{ExpansionTree, ExpansionType};
-use crate::calyx_rs::production::node::TemplateNode;
-use crate::calyx_rs::production::{Production, ProductionBranch};
+use crate::generation::CalyxError;
+use crate::generation::evaluation::EvaluationContext;
+use crate::generation::expansion_tree::{ExpansionTree, ExpansionType};
+use crate::generation::production::node::TemplateNode;
+use crate::generation::production::{Production, ProductionBranch};
 use rand::Rng;
 use std::collections::HashMap;
 
