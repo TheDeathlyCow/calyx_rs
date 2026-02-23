@@ -1,8 +1,8 @@
 use crate::calyx_rs::expansion_tree::ExpansionTree;
-use crate::calyx_rs::filter::{create_builtin_filters, Filter};
+use crate::calyx_rs::filter::{Filter, create_builtin_filters};
+use crate::calyx_rs::production::ProductionBranch;
 use crate::calyx_rs::production::branch::EmptyBranch;
 use crate::calyx_rs::production::branch::UniformBranch;
-use crate::calyx_rs::production::ProductionBranch;
 use crate::calyx_rs::{CalyxError, Grammar, Options};
 use rand::seq::SliceRandom;
 use std::collections::HashMap;
@@ -154,9 +154,12 @@ struct UniqueCycle {
 impl UniqueCycle {
     fn new(count: usize) -> UniqueCycle {
         let sequence = Vec::with_capacity(count);
+
+        let index = if count > 0 { count - 1 } else { 0 };
+
         UniqueCycle {
             count,
-            index: count - 1,
+            index,
             sequence,
         }
     }
@@ -175,6 +178,10 @@ impl UniqueCycle {
     }
 
     fn poll(&mut self, options: &mut Options) -> usize {
+        if self.count == 0 {
+            return 0;
+        }
+
         self.index += 1;
 
         if self.index >= self.count {
@@ -183,5 +190,75 @@ impl UniqueCycle {
         }
 
         self.sequence.get(self.index).copied().unwrap_or(0)
+    }
+}
+
+#[cfg(test)]
+mod cycle_tests {
+    use rand::prelude::StdRng;
+    use rand::SeedableRng;
+    use crate::calyx_rs::Options;
+    use crate::calyx_rs::evaluation::UniqueCycle;
+
+    #[test]
+    fn empty_cycle_always_returns_0() {
+        let mut options = Options::new(false, rand::rng());
+        let mut cycle = UniqueCycle::new(0);
+
+        assert_eq!(cycle.poll(&mut options), 0);
+        assert_eq!(cycle.poll(&mut options), 0);
+        assert_eq!(cycle.poll(&mut options), 0);
+    }
+
+    #[test]
+    fn cycle_length_one_always_returns_0() {
+        let mut options = Options::new(false, rand::rng());
+        let mut cycle = UniqueCycle::new(1);
+
+        assert_eq!(cycle.poll(&mut options), 0);
+        assert_eq!(cycle.poll(&mut options), 0);
+        assert_eq!(cycle.poll(&mut options), 0);
+    }
+
+    #[test]
+    fn cycles_refresh_when_fully_consumed() {
+        let rng = StdRng::seed_from_u64(12345);
+        let mut options = Options::new(false, rng);
+
+        let count: usize = 3;
+        let mut cycle = UniqueCycle::new(count);
+
+        let mut results: Vec<usize> = Vec::new();
+
+        for _ in 0..(2 * count) {
+            results.push(cycle.poll(&mut options));
+        }
+
+        results.sort();
+
+        assert_eq!(results, vec![0, 0, 1, 1, 2, 2]);
+    }
+
+    #[test]
+    fn cycles_are_different_each_time() {
+        let rng = StdRng::seed_from_u64(12345);
+        let mut options = Options::new(false, rng);
+
+        let count: usize = 3;
+        let mut cycle = UniqueCycle::new(count);
+
+        let mut first_results: Vec<usize> = Vec::new();
+        let mut second_results: Vec<usize> = Vec::new();
+
+        for _ in 0..count {
+            first_results.push(cycle.poll(&mut options));
+        }
+
+        for _ in 0..count {
+            second_results.push(cycle.poll(&mut options));
+        }
+
+        assert_eq!(first_results.len(), second_results.len());
+        assert_ne!(first_results, second_results);
     }
 }
