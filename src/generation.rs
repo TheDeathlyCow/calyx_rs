@@ -48,7 +48,7 @@ impl Grammar {
     }
 
     /// Creates a new lenient grammar with a specified random source.
-    pub fn from_rng<R: rand::Rng + 'static>(random_source: R) -> Grammar {
+    pub fn with_rng<R: rand::Rng + 'static>(random_source: R) -> Grammar {
         Grammar {
             registry: Registry::new(),
             options: Options::new(false, random_source),
@@ -56,7 +56,7 @@ impl Grammar {
     }
 
     /// Creates a new grammar with the given options.
-    pub fn from_options(options: Options) -> Grammar {
+    pub fn with_options(options: Options) -> Grammar {
         Grammar {
             registry: Registry::new(),
             options,
@@ -206,7 +206,7 @@ impl Grammar {
 
 impl Options {
     /// Creates a new options struct with a defined [Self::strict] mode and random source.
-    pub fn new<R: rand::Rng + 'static>(strict: bool, random_source: R) -> Options {
+    pub fn new<R: rand::Rng + 'static>(strict: bool, random_source: R) -> Self {
         Options {
             strict,
             random_source: Box::new(random_source),
@@ -214,7 +214,7 @@ impl Options {
     }
 
     /// Creates a new [Self::lenient] options struct,
-    pub fn new_lenient<R: rand::Rng + 'static>(random_source: R) -> Options {
+    pub fn with_rng<R: rand::Rng + 'static>(random_source: R) -> Self {
         Options {
             strict: false,
             random_source: Box::new(random_source),
@@ -280,7 +280,7 @@ mod grammar_tests {
     #[test]
     fn evaluate_recursive_rule() {
         let rng = StdRng::seed_from_u64(12345);
-        let mut grammar = Grammar::from_rng(rng);
+        let mut grammar = Grammar::with_rng(rng);
 
         assert!(
             grammar
@@ -311,7 +311,7 @@ mod grammar_tests {
     #[test]
     fn evaluate_weighted_rule() {
         let rng = StdRng::seed_from_u64(12345);
-        let mut grammar = Grammar::from_rng(rng);
+        let mut grammar = Grammar::with_rng(rng);
 
         assert!(
             grammar
@@ -342,7 +342,7 @@ mod grammar_tests {
     #[test]
     fn parse_negative_weight_fails() {
         let rng = StdRng::seed_from_u64(12345);
-        let mut grammar = Grammar::from_rng(rng);
+        let mut grammar = Grammar::with_rng(rng);
 
         assert!(
             grammar
@@ -367,7 +367,7 @@ mod grammar_tests {
     #[test]
     fn parse_zero_weight_fails() {
         let rng = StdRng::seed_from_u64(12345);
-        let mut grammar = Grammar::from_rng(rng);
+        let mut grammar = Grammar::with_rng(rng);
 
         assert!(
             grammar
@@ -407,7 +407,7 @@ mod grammar_tests {
     #[test]
     fn memoized_rules_return_identical_expression() {
         let rng = StdRng::seed_from_u64(12345);
-        let mut grammar = Grammar::from_rng(rng);
+        let mut grammar = Grammar::with_rng(rng);
 
         assert!(
             grammar

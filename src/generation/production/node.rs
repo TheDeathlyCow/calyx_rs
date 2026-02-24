@@ -84,7 +84,7 @@ mod unique_tests {
     #[test]
     fn unique_node_cycles_through_each_template_in_branch() {
         let rng = StdRng::seed_from_u64(12345);
-        let mut grammar = Grammar::from_options(Options::new(true, rng));
+        let mut grammar = Grammar::with_options(Options::new(true, rng));
 
         assert!(
             grammar

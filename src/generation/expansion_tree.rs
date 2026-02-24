@@ -1,5 +1,4 @@
-#[derive(Clone)]
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum ExpansionType {
     Atom(String),
     Result,
@@ -14,8 +13,7 @@ pub enum ExpansionType {
     Unique,
 }
 
-#[derive(Clone)]
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct ExpansionTree {
     children: Vec<ExpansionTree>,
     symbol: ExpansionType,
@@ -26,32 +24,35 @@ impl ExpansionTree {
         &self.children
     }
 
-    pub fn symbol(&self) -> ExpansionType {
-        self.symbol.clone()
+    pub fn symbol(&self) -> &ExpansionType {
+        &self.symbol
     }
 
-    pub fn new(symbol: ExpansionType, tail: Vec<ExpansionTree>) -> Self {
-        ExpansionTree { children: tail, symbol }
+    pub fn flatten(&self) -> String {
+        let mut term = String::new();
+        self.collect_atoms(&mut term);
+        term
     }
 
-    pub fn chain(symbol: ExpansionType, tail: ExpansionTree) -> Self {
+    pub(crate) fn new(symbol: ExpansionType, tail: Vec<ExpansionTree>) -> Self {
+        ExpansionTree {
+            children: tail,
+            symbol,
+        }
+    }
+
+    pub(crate) fn chain(symbol: ExpansionType, tail: ExpansionTree) -> Self {
         ExpansionTree {
             children: vec![tail],
             symbol,
         }
     }
 
-    pub fn new_atom(term: String) -> Self {
+    pub(crate) fn new_atom(term: String) -> Self {
         ExpansionTree {
             children: vec![],
             symbol: ExpansionType::Atom(term.to_string()),
         }
-    }
-
-    pub fn flatten(&self) -> String {
-        let mut term = String::from("");
-        self.collect_atoms(&mut term);
-        term
     }
 
     fn collect_atoms(&self, concat: &mut String) {

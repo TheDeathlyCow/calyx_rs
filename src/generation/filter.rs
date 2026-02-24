@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 pub type Filter = fn(String) -> String;
 
-pub fn create_builtin_filters() -> HashMap<String, Filter> {
+pub(crate) fn create_builtin_filters() -> HashMap<String, Filter> {
     let mut filters: HashMap<String, Filter> = HashMap::new();
 
     filters.insert("lowercase".to_string(), |s| s.to_lowercase());

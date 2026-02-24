@@ -1,9 +1,9 @@
 use crate::generation::expansion_tree::ExpansionTree;
-use crate::generation::filter::{Filter, create_builtin_filters};
+use crate::generation::filter::Filter;
 use crate::generation::production::ProductionBranch;
-use crate::generation::production::branch::{EmptyBranch, WeightedBranch};
 use crate::generation::production::branch::UniformBranch;
-use crate::generation::{CalyxError, Grammar, Options};
+use crate::generation::production::branch::{EmptyBranch, WeightedBranch};
+use crate::generation::{CalyxError, Grammar, Options, filter};
 use rand::seq::SliceRandom;
 use std::collections::HashMap;
 
@@ -18,7 +18,7 @@ impl Registry {
     pub(crate) fn new() -> Self {
         Self {
             rules: HashMap::new(),
-            filters: create_builtin_filters(),
+            filters: filter::create_builtin_filters(),
             empty_rule: EmptyBranch {},
         }
     }
@@ -210,10 +210,10 @@ impl UniqueCycle {
 
 #[cfg(test)]
 mod cycle_tests {
-    use rand::prelude::StdRng;
-    use rand::SeedableRng;
     use crate::generation::Options;
     use crate::generation::evaluation::UniqueCycle;
+    use rand::SeedableRng;
+    use rand::prelude::StdRng;
 
     #[test]
     fn empty_cycle_always_returns_0() {
