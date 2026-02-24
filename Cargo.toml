@@ -3,6 +3,10 @@ name = "calyx_rs"
 version = "0.1.0"
 edition = "2024"
 license = "AGPL-3"
+description = "A Rust port of the Calyx generative grammar library"
+repository = "https://github.com/TheDeathlyCow/calyx_rs"
+readme = "README.md"
+keywords = ["calyx", "grammar", "text-generation", "parsing"]
 
 [dependencies]
 rand = "0.10.0"
